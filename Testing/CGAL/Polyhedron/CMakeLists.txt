@@ -583,3 +583,11 @@ if( BUILD_ADVANCED_TESTS_COMPR_VALENCE )
 			  ${TEST_DECOMPRESSION_VALENCE_TOLERANCE}
 			  )
 endif( BUILD_ADVANCED_TESTS_COMPR_VALENCE )
+
+#####
+add_executable( test_boolean_operations_polyhedron
+                test_boolean_operations_polyhedron.cpp
+				)
+target_link_libraries( test_boolean_operations_polyhedron
+                       ${Boost_LIBRARIES} ${FBX_LIBRARY} ${VTK_LIBRARIES}
+                       )
