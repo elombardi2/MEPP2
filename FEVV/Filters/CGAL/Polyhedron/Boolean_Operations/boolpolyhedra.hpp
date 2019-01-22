@@ -15,6 +15,8 @@
 //TODO-elo-restore  #include "CPolyhedron_from_polygon_builder_3.h"
 //TODO-elo-restore  #include "Boolean_Operations_triangulation.h"
 
+#include <list>
+
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
 #include "Time_measure.h"
 #endif // BOOLEAN_OPERATIONS_DEBUG
@@ -92,25 +94,58 @@ private:
 	Facet_handle f;
 };
 	
-/*! \typedef Triangle
- * \brief A triangle enriched with a facet handle*/
-typedef Enriched_Triangle															Triangle;
-/*! \typedef AABB_Primitive
- * \brief A primitive for an AABB-tree*/
-typedef CGAL::AABB_triangle_primitive<AABB_Kernel,std::list<Triangle>::iterator>	AABB_Primitive;
-/*! \typedef AABB_Traits
- * \brief concept for AABB-tree*/
-typedef CGAL::AABB_traits<AABB_Kernel, AABB_Primitive>								AABB_Traits;
-/*! \typedef AABB_Tree
- * \brief AABB-tree*/
-typedef CGAL::AABB_tree<AABB_Traits>												AABB_Tree;
-
 /*! \class BoolPolyhedra
  * \brief The class that compute a Boolean operation*/
 template< typename HalfedgeGraph, typename PointMap >
 class BoolPolyhedra
 {
 private:
+  typedef boost::graph_traits< HalfedgeGraph >      GraphTraits;
+  typedef typename GraphTraits::face_descriptor     Facet_handle;
+  typedef typename GraphTraits::halfedge_descriptor Halfedge_handle;
+
+
+  /*! \typedef Triangle
+  * \brief A triangle enriched with a facet handle*/
+  using Triangle = Enriched_Triangle< HalfedgeGraph >;
+
+  /*! \typedef AABB_Primitive
+  * \brief A primitive for an AABB-tree*/
+  using TriangleListIterator = typename std::list< Triangle >::iterator;
+  using AABB_Primitive =
+      typename CGAL::AABB_triangle_primitive< AABB_Kernel,
+                                              TriangleListIterator >;
+  /*! \typedef AABB_Traits
+  * \brief concept for AABB-tree*/
+  typedef CGAL::AABB_traits< AABB_Kernel, AABB_Primitive > AABB_Traits;
+  /*! \typedef AABB_Tree
+  * \brief AABB-tree*/
+  typedef CGAL::AABB_tree< AABB_Traits > AABB_Tree;
+
+  /*!
+  * \typedef VertexId
+  * \brief Vertex Id
+  */
+  typedef unsigned long							VertexId;
+
+  /*!
+  * \typedef HalfedgeId
+  * \brief Halfedge Id
+  */
+  typedef unsigned long							HalfedgeId;
+
+  /*!
+  * \typedef FacetId
+  * \brief Facet Id
+  */
+  typedef unsigned long							FacetId;
+
+  /*!
+  * \typedef InterId
+  * \brief Intersection Id
+  */
+  typedef unsigned long							InterId;
+
   /*! \struct Triangle_Cut
    *  \brief A structure containing informations about an intersected facet
    */
@@ -175,10 +210,10 @@ public:
 	 * \param pMB : The second polyhedron
 	 * \param pMout : The result polyhedron
 	 * \param BOOP : The Boolean operator. Must be UNION, INTER or MINUS*/
-  BoolPolyhedra(HalfedgeGraph &pMA, //TODO-elo-make-const?, rename to mA
-                PointMap      &pmA, //TODO-elo-make-const?
-                HalfedgeGraph &pMB, //TODO-elo-make-const?, rename to mB
-                PointMap      &pmB, //TODO-elo-make-const?
+  BoolPolyhedra(const HalfedgeGraph &pMA, //TODO-elo-make-const?, rename to mA
+                const PointMap      &pmA, //TODO-elo-make-const?
+                const HalfedgeGraph &pMB, //TODO-elo-make-const?, rename to mB
+                const PointMap      &pmB, //TODO-elo-make-const?
                 HalfedgeGraph &pMout,
                 PointMap      &pm_out,
                 Bool_Op BOOP)
@@ -268,10 +303,10 @@ private:
 	/*! \brief Initialisation of the tags, and triangulation of the two input polyhedra
 	 * \param pMA : The first polyhedron
 	 * \param pMB : The second polyhedron*/
-	void Init(HalfedgeGraph &pMA, //TODO-elo-make-const?, rename to mA
-            PointMap      &pmA, //TODO-elo-make-const?
-            HalfedgeGraph &pMB, //TODO-elo-make-const?, rename to mB
-            PointMap      &pmB) //TODO-elo-make-const?
+	void Init(const HalfedgeGraph &pMA, //TODO-elo-make-const?, rename to mA
+            const PointMap      &pmA, //TODO-elo-make-const?
+            const HalfedgeGraph &pMB, //TODO-elo-make-const?, rename to mB
+            const PointMap      &pmB) //TODO-elo-make-const?
 	{
 #if 0 //TODO-elo-WIP
 		m_pA = pMA;
@@ -1686,11 +1721,11 @@ private:
 	/*! \brief Lists the couples of facets that intersect*/
   std::map< FacetId, std::set< FacetId > > m_Couples;
   /*! \brief Lists the exact intersection points computed*/
-  vector< Point3d_exact > InterPts;
+  std::vector< Point3d_exact > InterPts;
   /*! \brief Informations about the intersected facets*/
-  vector< Triangle_Cut > Inter_tri;
+  std::vector< Triangle_Cut > Inter_tri;
   /*! \brief Index to obtain the handle of a facet with its Id*/
-  vector< Facet_handle > Facet_Handle;
+  std::vector< Facet_handle > Facet_Handle;
 
   /*! \brief the AABB-tree*/
   AABB_Tree tree;
