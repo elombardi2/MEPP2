@@ -10,7 +10,7 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #pragma once
 
-//#include "FEVV/Filters/CGAL/Polyhedron/Boolean_Operations/boolpolyhedra.hpp"
+#include "FEVV/Filters/CGAL/Polyhedron/Boolean_Operations/boolpolyhedra.hpp"
 
 namespace FEVV {
 namespace Filters {
@@ -48,7 +48,7 @@ boolean_union(const HalfedgeGraph  &g1,
               PointMap             &pm_out, //TODO-elo-really-necessary?
               const GeometryTraits &gt)
 {
-  //TODO-elo-restore  BoolPolyhedra(pMin1, pMin2, pMout, UNION);
+  BoolPolyhedra(g1, pm1, g2, pm2, g_out, pm_out, UNION);
 }
 
 /**
