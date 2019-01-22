@@ -352,15 +352,23 @@ private:
         ++pVertex)
     {
       // TODO-elo-rm  pVertex->Label = 0xFFFFFFFF;
-      typename GraphTraits::vertex_descriptor i = *pVertex;
-      put(m_vertex_Label_A, *pVertex, 0xFFFFFFFF);
+      //TODO-elo-test-rm-beg
+      //int i = *pVertex;
+      //typename GraphTraits::vertex_descriptor vd;
+      //int j = vd;
+      //typename HalfedgeGraph::Vertex_handle vh;
+      //int k = vh;
+      //int l = pVertex;
+      // -> vd = same type as vh and pVertex!!!      
+      //TODO-elo-test-rm-end
+      put(m_vertex_Label_A, pVertex, 0xFFFFFFFF);
     }
     for(Vertex_iterator pVertex = m_pB.vertices_begin();
         pVertex != m_pB.vertices_end();
         ++pVertex)
     {
       // TODO-elo-rm  pVertex->Label = 0xFFFFFFFF;
-      put(m_vertex_Label_B, *pVertex, 0xFFFFFFFF);
+      put(m_vertex_Label_B, pVertex, 0xFFFFFFFF);
     }
     for(Facet_iterator pFacet = m_pA.facets_begin();
         pFacet != m_pA.facets_end();
@@ -369,9 +377,9 @@ private:
       // TODO-elo-rm  pFacet->Label = 0xFFFFFFFF;
       // TODO-elo-rm  pFacet->IsExt = false;
       // TODO-elo-rm  pFacet->IsOK = false;
-      put(m_face_Label_A, *pFacet, 0xFFFFFFFF);
-      put(m_face_IsExt_A, *pFacet, false);
-      put(m_face_IsOK_A, *pFacet, false);
+      put(m_face_Label_A, pFacet, 0xFFFFFFFF);
+      put(m_face_IsExt_A, pFacet, false);
+      put(m_face_IsOK_A, pFacet, false);
     }
     for(Facet_iterator pFacet = m_pB.facets_begin();
         pFacet != m_pB.facets_end();
@@ -380,9 +388,9 @@ private:
       //TODO-elo-rm  pFacet->Label = 0xFFFFFFFF;
       //TODO-elo-rm  pFacet->IsExt = false;
       //TODO-elo-rm  pFacet->IsOK = false;
-      put(m_face_Label_B, *pFacet, 0xFFFFFFFF);
-      put(m_face_IsExt_B, *pFacet, false);
-      put(m_face_IsOK_B, *pFacet, false);
+      put(m_face_Label_B, pFacet, 0xFFFFFFFF);
+      put(m_face_IsExt_B, pFacet, false);
+      put(m_face_IsOK_B, pFacet, false);
     }
   }
 
