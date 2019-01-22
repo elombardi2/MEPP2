@@ -30,36 +30,36 @@ enum Bool_Op {UNION, INTER, MINUS};
  * \typedef num_type
  * \brief exact number type
  */
-typedef CGAL::Lazy_exact_nt<CGAL::Gmpq>		num_type;
+typedef CGAL::Lazy_exact_nt<CGAL::Gmpq>    num_type;
 
 /*!
  * \typedef Exact_Kernel
  * \brief Kernel using exact number type
  */
-typedef CGAL::Simple_cartesian<num_type>	Exact_Kernel;
+typedef CGAL::Simple_cartesian<num_type>  Exact_Kernel;
 
 /*!
  * \typedef Vector_exact
  * \brief 3d vector using exact number type
  */
-typedef CGAL::Vector_3<Exact_Kernel>		Vector_exact;
+typedef CGAL::Vector_3<Exact_Kernel>    Vector_exact;
 
 /*!
  * \typedef Point3d_exact
  * \brief 3d point using exact number type
  */
-typedef CGAL::Point_3<Exact_Kernel>			Point3d_exact;
+typedef CGAL::Point_3<Exact_Kernel>    Point3d_exact;
 
 /**
  * \fn inline Point3d_exact point_to_exact(Point3d &p)
  * \brief Convertion from a Point3d (double) to a Point3d_exact (exact)
- * \param p : The Point3d 
+ * \param p : The Point3d
  * \return The conversion in Point3d_exact.
  */
 template< typename Point3d >
 Point3d_exact point_to_exact(Point3d &p)
 {
-	return Point3d_exact(p.x(),p.y(),p.z());
+  return Point3d_exact(p.x(),p.y(),p.z());
 }
 
 /**
@@ -72,7 +72,7 @@ Point3d_exact point_to_exact(Point3d &p)
 template< typename Point3d >
 Point3d point_to_double(Point3d_exact &pe)
 {
-	return Point3d(to_double(pe.x()),to_double(pe.y()),to_double(pe.z()));
+  return Point3d(to_double(pe.x()),to_double(pe.y()),to_double(pe.z()));
 }
 
 /**
@@ -91,7 +91,7 @@ Vector_exact Compute_Normal_direction(Halfedge_handle he)   // MT: suppression r
       point_to_exact(he->next()->next()->vertex()->point()) -
           point_to_exact(he->vertex()->point()));
 }
-	
+
 #ifdef BOOLEAN_OPERATIONS_DEBUG
 
 /**
@@ -103,7 +103,6 @@ Vector_exact Compute_Normal_direction(Halfedge_handle he)   // MT: suppression r
  */
 inline double tr(double &n)
 {
-	return floor(n*1000)/1000;
+  return floor(n*1000)/1000;
 }
 #endif // BOOLEAN_OPERATIONS_DEBUG
-	
