@@ -40,12 +40,12 @@ template< typename HalfedgeGraph,
           typename PointMap,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
-boolean_union(const HalfedgeGraph  &g1,
-              const PointMap       &pm1,
-              const HalfedgeGraph  &g2,
-              const PointMap       &pm2,
-              HalfedgeGraph        &g_out,
-              PointMap             &pm_out, //TODO-elo-really-necessary?
+boolean_union(HalfedgeGraph &g1,
+              PointMap      &pm1,
+              HalfedgeGraph &g2,
+              PointMap      &pm2,
+              HalfedgeGraph &g_out,
+              PointMap      &pm_out, //TODO-elo-really-necessary?
               const GeometryTraits &gt)
 {
   BoolPolyhedra< HalfedgeGraph, PointMap >(
@@ -75,12 +75,12 @@ template< typename HalfedgeGraph,
           typename PointMap,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
-boolean_union(const HalfedgeGraph &g1,
-              const PointMap      &pm1,
-              const HalfedgeGraph &g2,
-              const PointMap      &pm2,
-              HalfedgeGraph       &g_out,
-              PointMap            &pm_out //TODO-elo-really-necessary?
+boolean_union(HalfedgeGraph &g1,
+              PointMap      &pm1,
+              HalfedgeGraph &g2,
+              PointMap      &pm2,
+              HalfedgeGraph &g_out,
+              PointMap      &pm_out //TODO-elo-really-necessary?
               )
 {
   GeometryTraits gt(g1);

@@ -15,6 +15,9 @@
 //TODO-elo-restore  #include "CPolyhedron_from_polygon_builder_3.h"
 //TODO-elo-restore  #include "Boolean_Operations_triangulation.h"
 
+#include <boost/graph/graph_traits.hpp>
+#include "FEVV/Wrappings/Geometry_traits.h"
+#include "FEVV/Wrappings/properties.h"
 #include <list>
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
@@ -103,6 +106,10 @@ private:
   typedef boost::graph_traits< HalfedgeGraph >      GraphTraits;
   typedef typename GraphTraits::face_descriptor     Facet_handle;
   typedef typename GraphTraits::halfedge_descriptor Halfedge_handle;
+  //TODO-elo-why-not-working?  typedef typename GraphTraits::vertex_iterator   Vertex_iterator;
+  typedef typename HalfedgeGraph::Vertex_iterator   Vertex_iterator;
+  //TODO-elo-why-not-working?  typedef typename GraphTraits::face_iterator    Facet_iterator;
+  typedef typename HalfedgeGraph::Facet_iterator    Facet_iterator;
 
 
   /*! \typedef Triangle
@@ -210,10 +217,10 @@ public:
 	 * \param pMB : The second polyhedron
 	 * \param pMout : The result polyhedron
 	 * \param BOOP : The Boolean operator. Must be UNION, INTER or MINUS*/
-  BoolPolyhedra(const HalfedgeGraph &pMA, //TODO-elo-make-const?, rename to mA
-                const PointMap      &pmA, //TODO-elo-make-const?
-                const HalfedgeGraph &pMB, //TODO-elo-make-const?, rename to mB
-                const PointMap      &pmB, //TODO-elo-make-const?
+  BoolPolyhedra(HalfedgeGraph &pMA, //TODO-elo-rename to mA
+                PointMap      &pmA,
+                HalfedgeGraph &pMB, //TODO-elo-rename to mB
+                PointMap      &pmB,
                 HalfedgeGraph &pMout,
                 PointMap      &pm_out,
                 Bool_Op BOOP)
@@ -303,44 +310,130 @@ private:
 	/*! \brief Initialisation of the tags, and triangulation of the two input polyhedra
 	 * \param pMA : The first polyhedron
 	 * \param pMB : The second polyhedron*/
-	void Init(const HalfedgeGraph &pMA, //TODO-elo-make-const?, rename to mA
-            const PointMap      &pmA, //TODO-elo-make-const?
-            const HalfedgeGraph &pMB, //TODO-elo-make-const?, rename to mB
-            const PointMap      &pmB) //TODO-elo-make-const?
+	void Init(HalfedgeGraph &pMA, //TODO-elo-rename to mA
+            PointMap      &pmA,
+            HalfedgeGraph &pMB, //TODO-elo-rename to mB
+            PointMap      &pmB)
 	{
-#if 0 //TODO-elo-WIP
 		m_pA = pMA;
-		m_pB = pMB;
+    m_pmA = pmA;
+    m_pB = pMB;
+    m_pmB = pmB;
 
-		//triangulation of the two input polyhedra
-		//this is necessary for the AABB-tree, and simplify the computation of the intersections
-		if(!m_pA->is_pure_triangle()) m_pA->triangulate();
-		if(!m_pB->is_pure_triangle()) m_pB->triangulate();
+    // initialize property maps
+    m_vertex_Label_A =
+        FEVV::make_vertex_property_map< HalfedgeGraph, VertexId >(m_pA);
+    m_vertex_Label_B =
+        FEVV::make_vertex_property_map< HalfedgeGraph, VertexId >(m_pB);
+    m_face_Label_A =
+        FEVV::make_face_property_map< HalfedgeGraph, FacetId >(m_pA);
+    m_face_Label_B =
+        FEVV::make_face_property_map< HalfedgeGraph, FacetId >(m_pB);
+    m_face_IsExt_A =
+        FEVV::make_face_property_map< HalfedgeGraph, bool >(m_pA);
+    m_face_IsExt_B =
+        FEVV::make_face_property_map< HalfedgeGraph, bool >(m_pB);
+    m_face_IsOK_A =
+        FEVV::make_face_property_map< HalfedgeGraph, bool >(m_pA);
+    m_face_IsOK_B =
+        FEVV::make_face_property_map< HalfedgeGraph, bool >(m_pB);
 
-		//initialize the tags
-		for(Vertex_iterator pVertex = m_pA->vertices_begin();pVertex != m_pA->vertices_end();++pVertex)
-		{
-			pVertex->Label = 0xFFFFFFFF;
-		}
-		for(Vertex_iterator pVertex = m_pB->vertices_begin();pVertex != m_pB->vertices_end();++pVertex)
-		{
-			pVertex->Label = 0xFFFFFFFF;
-		}
-		for(Facet_iterator pFacet = m_pA->facets_begin();pFacet != m_pA->facets_end();++pFacet)
-		{
-			pFacet->Label = 0xFFFFFFFF;
-			pFacet->IsExt = false;
-			pFacet->IsOK = false;
-		}
-		for(Facet_iterator pFacet = m_pB->facets_begin();pFacet != m_pB->facets_end();++pFacet)
-		{
-			pFacet->Label = 0xFFFFFFFF;
-			pFacet->IsExt = false;
-			pFacet->IsOK = false;
-		}
-#endif //TODO-elo-WIP
-	}
-	
+    // triangulation of the two input polyhedra
+    // this is necessary for the AABB-tree, and simplify the computation of the
+    // intersections
+    if(!m_pA.is_pure_triangle())
+      triangulate(m_pA);
+    if(!m_pB.is_pure_triangle())
+      triangulate(m_pB);
+
+    // initialize the tags
+    for(Vertex_iterator pVertex = m_pA.vertices_begin();
+        pVertex != m_pA.vertices_end();
+        ++pVertex)
+    {
+      // TODO-elo-rm  pVertex->Label = 0xFFFFFFFF;
+      typename GraphTraits::vertex_descriptor i = *pVertex;
+      put(m_vertex_Label_A, *pVertex, 0xFFFFFFFF);
+    }
+    for(Vertex_iterator pVertex = m_pB.vertices_begin();
+        pVertex != m_pB.vertices_end();
+        ++pVertex)
+    {
+      // TODO-elo-rm  pVertex->Label = 0xFFFFFFFF;
+      put(m_vertex_Label_B, *pVertex, 0xFFFFFFFF);
+    }
+    for(Facet_iterator pFacet = m_pA.facets_begin();
+        pFacet != m_pA.facets_end();
+        ++pFacet)
+    {
+      // TODO-elo-rm  pFacet->Label = 0xFFFFFFFF;
+      // TODO-elo-rm  pFacet->IsExt = false;
+      // TODO-elo-rm  pFacet->IsOK = false;
+      put(m_face_Label_A, *pFacet, 0xFFFFFFFF);
+      put(m_face_IsExt_A, *pFacet, false);
+      put(m_face_IsOK_A, *pFacet, false);
+    }
+    for(Facet_iterator pFacet = m_pB.facets_begin();
+        pFacet != m_pB.facets_end();
+        ++pFacet)
+    {
+      //TODO-elo-rm  pFacet->Label = 0xFFFFFFFF;
+      //TODO-elo-rm  pFacet->IsExt = false;
+      //TODO-elo-rm  pFacet->IsOK = false;
+      put(m_face_Label_B, *pFacet, 0xFFFFFFFF);
+      put(m_face_IsExt_B, *pFacet, false);
+      put(m_face_IsOK_B, *pFacet, false);
+    }
+  }
+
+  void triangulate(HalfedgeGraph &m) //TODO-elo-make-a-separate-filter?
+  {
+    std::cout << "Triangulating mesh..." << std::endl;
+
+    Facet_iterator f = m.facets_begin();
+    Facet_iterator f2 = m.facets_begin();
+    do // for (; f != this->facets_end(); f++)
+    {
+      f = f2;
+      if(f == m.facets_end())
+      {
+        break;
+      }
+      f2++;
+
+      if(!(f->is_triangle()))
+      {
+        int num = (int)(f->facet_degree() - 3);
+        Halfedge_handle h = f->halfedge();
+
+        h = m.make_hole(h);
+
+        Halfedge_handle g = h->next();
+        g = g->next();
+        Halfedge_handle new_he = m.add_facet_to_border(h, g);
+        g = new_he;
+
+        num--;
+        while(num != 0)
+        {
+          g = g->opposite();
+          g = g->next();
+          Halfedge_handle new_he = m.add_facet_to_border(h, g);
+          g = new_he;
+
+          num--;
+        }
+
+        m.fill_hole(h);
+      }
+
+    } while(true);
+
+    //TODO-elo-rm  this->compute_normals();
+    //TODO-elo-rm  this->compute_type();
+  }
+
+
 #if 0 //TODO-elo-WIP
 	/*! \brief Finds every couple of facets between the two input polyhedra that intersects
 	 * \brief Each couple is stored in the member m_Couples*/
@@ -1711,10 +1804,32 @@ private:
 	
 	/*! \brief Boolean operation computed*/
 	Bool_Op m_BOOP;
+
 	/*! \brief The first input polyhedron*/
   HalfedgeGraph m_pA; //TODO-elo-rm PolyhedronPtr m_pA;
+  PointMap m_pmA;
   /*! \brief The second input polyhedron*/
 	HalfedgeGraph m_pB; //TODO-elo-rm PolyhedronPtr m_pB;
+  PointMap m_pmB;
+
+  /*! \brief  Property maps */
+  typename FEVV::Vertex_pmap< HalfedgeGraph, VertexId >
+      m_vertex_Label_A; // ELO replace pVertex->Label
+  typename FEVV::Vertex_pmap< HalfedgeGraph, VertexId >
+      m_vertex_Label_B; // ELO replace pVertex->Label
+  typename FEVV::Face_pmap< HalfedgeGraph, FacetId >
+      m_face_Label_A; // ELO replace pFacet->Label
+  typename FEVV::Face_pmap< HalfedgeGraph, FacetId >
+      m_face_Label_B; // ELO replace pFacet->Label
+  typename FEVV::Face_pmap< HalfedgeGraph, bool >
+      m_face_IsExt_A; // ELO replace pFacet->IsExt
+  typename FEVV::Face_pmap< HalfedgeGraph, bool >
+      m_face_IsExt_B; // ELO replace pFacet->IsExt
+  typename FEVV::Face_pmap< HalfedgeGraph, bool >
+      m_face_IsOK_A; // ELO replace pFacet->IsOK
+  typename FEVV::Face_pmap< HalfedgeGraph, bool >
+      m_face_IsOK_B; // ELO replace pFacet->IsOK
+
 	/*! \brief The polyhedron builder*/
 	//TODO-elo-rm  CPolyhedron_from_polygon_builder_3<HDS> ppbuilder;
 
