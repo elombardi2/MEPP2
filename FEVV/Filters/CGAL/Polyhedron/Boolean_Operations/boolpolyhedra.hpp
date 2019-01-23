@@ -236,6 +236,14 @@ public:
     Timer.Start();
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
+    Init(pMA, pmA, pMB, pmB);
+
+#if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
+    duration_Init = Timer.GetDiff();
+    Timer.Start();
+#endif // BOOLEAN_OPERATIONS_DEBUG
+
+    FindCouples();
     //
     /////////////////////////////////////////////////
     //                                             //
@@ -250,15 +258,7 @@ public:
     //
     //
     //
-    Init(pMA, pmA, pMB, pmB);
-
 #if 0 //TODO-elo-WIP
-#if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
-    duration_Init = Timer.GetDiff();
-    Timer.Start();
-#endif // BOOLEAN_OPERATIONS_DEBUG
-
-    FindCouples();
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
     duration_FindCouples = Timer.GetDiff();
@@ -457,7 +457,6 @@ private:
   }
 
 
-#if 0 //TODO-elo-WIP
   /*! \brief Finds every couple of facets between the two input polyhedra that intersects
    * \brief Each couple is stored in the member m_Couples*/
   void FindCouples()
@@ -474,85 +473,133 @@ private:
     if(m_pA->size_of_facets() < m_pB->size_of_facets())
     {
       //Building the AABB-tree on the first polyhedron
-      for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++) triangles.push_back(Triangle(pFacet));
+      for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
+        triangles.push_back(Triangle(pFacet));
       tree.rebuild(triangles.begin(),triangles.end());
 
       //collision test with each facet of the second polyhedron
-      for (pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
+      for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
       {
-        //"primitives" is the list of the triangles intersected (as a list of triangles)
-        tree.all_intersected_primitives(Triangle(pFacet), std::back_inserter(primitives));
+        //"primitives" is the list of the triangles intersected (as a list of
+        //triangles)
+        tree.all_intersected_primitives(Triangle(pFacet),
+                                        std::back_inserter(primitives));
+        // TODO-elo-note: as far as I understand, primitives contains
+        //                all A faces that intersect pFacet B face
         if(primitives.size() !=0)
         {
+          // TODO-elo-note: push B face to Facet_Handle
           Facet_Handle.push_back(pFacet);
           //update of the tags (the facet and the three incidents halfedges
-          pFacet->Label = j++;
-          pFacet->facet_begin()->Label = i++;
-          pFacet->facet_begin()->next()->Label = i++;
-          pFacet->facet_begin()->next()->next()->Label = i++;
-          //creation of a Triangle_Cut structure to store the informations about the intersections
-          Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(pFacet->facet_begin()), false));
-          do {
+          //TODO-elo-rm  pFacet->Label = j++;
+          put(m_face_Label_B, pFacet, j++);
+          //TODO-elo-rm  pFacet->facet_begin()->Label = i++;
+          put(m_face_Label_B, pFacet->facet_begin(), i++);
+          //TODO-elo-rm  pFacet->facet_begin()->next()->Label = i++;
+          put(m_face_Label_B, pFacet->facet_begin()->next(), i++);
+          //TODO-elo-rm  pFacet->facet_begin()->next()->next()->Label = i++;
+          put(m_face_Label_B, pFacet->facet_begin()->next()->next(), i++);
+          // creation of a Triangle_Cut structure to store the informations
+          // about the intersections
+          Inter_tri.push_back(Triangle_Cut(
+              Compute_Normal_direction(pFacet->facet_begin()), false));
+          do
+          {
+            //TODO-elo-note: supposing primitives contains A mesh faces
             //same operations for the intersected primitives (only one time)
-            if(primitives.back()->facet()->Label == 0xFFFFFFFF)
+            //TODO-elo-rm  if(primitives.back()->facet()->Label == 0xFFFFFFFF)
+            if(get(m_face_Label_A, primitives.back()->facet()) == 0xFFFFFFFF)
             {
+              //TODO-elo-note: push A face to Facet_Handle
               Facet_Handle.push_back(primitives.back()->facet());
-              primitives.back()->facet()->Label = j++;
-              primitives.back()->facet()->facet_begin()->Label = i++;
-              primitives.back()->facet()->facet_begin()->next()->Label = i++;
-              primitives.back()->facet()->facet_begin()->next()->next()->Label = i++;
+              //TODO-elo-rm  primitives.back()->facet()->Label = j++;
+              put(m_face_Label_A, primitives.back()->facet(), j++);
+              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->Label = i++;
+              put(m_face_Label_A, primitives.back()->facet()->facet_begin(), i++);
+              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->Label = i++;
+              put(m_face_Label_A, primitives.back()->facet()->facet_begin()->next(), i++);
+              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->next()->Label = i++;
+              put(m_face_Label_A, primitives.back()->facet()->facet_begin()->next()->next(), i++);
               Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(primitives.back()->facet()->facet_begin()), true));
             }
             //store every couple of intersected facet
-            m_Couples[primitives.back()->facet()->Label].insert(pFacet->Label);
+            //TODO-elo-rm  m_Couples[primitives.back()->facet()->Label].insert(pFacet->Label);
+            m_Couples[get(m_face_Label_A, primitives.back()->facet())].insert(
+                get(m_face_Label_B, pFacet));
+            //TODO-elo-note: here m_Couples contains (label_A, label_B) couples
             primitives.pop_back();
           }
           while(primitives.size() != 0);
+          //TODO-elo-note: primitives is empty here
         }
       }
     }
     else
     {
       //Building the AABB-tree on the second polyhedron
-      for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++) triangles.push_back(Triangle(pFacet));
+      for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
+        triangles.push_back(Triangle(pFacet));
       tree.rebuild(triangles.begin(),triangles.end());
 
       //collision test with each facet of the first polyhedron
-      for (pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
+      for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
       {
         //"primitives" is the list of the triangles intersected (as a list of triangles)
-        tree.all_intersected_primitives(Triangle(pFacet), std::back_inserter(primitives));
+        tree.all_intersected_primitives(Triangle(pFacet),
+                                        std::back_inserter(primitives));
+        // TODO-elo-note: as far as I understand, primitives contains
+        //                all B faces that intersect pFacet A face
         if(primitives.size() !=0)
         {
+          // TODO-elo-note: push A face to Facet_Handle
           Facet_Handle.push_back(pFacet);
           //update of the tags (the facet and the three incidents halfedges
-          pFacet->Label = j++;
-          pFacet->facet_begin()->Label = i++;
-          pFacet->facet_begin()->next()->Label = i++;
-          pFacet->facet_begin()->next()->next()->Label = i++;
-          //creation of a Triangle_Cut structure to store the informations about the intersections
-          Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(pFacet->facet_begin()), true));
-          do {
+          //TODO-elo-rm  pFacet->Label = j++;
+          put(m_face_Label_A, pFacet, j++);
+          //TODO-elo-rm  pFacet->facet_begin()->Label = i++;
+          put(m_face_Label_A, pFacet->facet_begin(), i++);
+          //TODO-elo-rm  pFacet->facet_begin()->next()->Label = i++;
+          put(m_face_Label_A, pFacet->facet_begin()->next(), i++);
+          //TODO-elo-rm  pFacet->facet_begin()->next()->next()->Label = i++;
+          put(m_face_Label_A, pFacet->facet_begin()->next()->next(), i++);
+          // creation of a Triangle_Cut structure to store the informations
+          // about the intersections
+          Inter_tri.push_back(Triangle_Cut(
+              Compute_Normal_direction(pFacet->facet_begin()), true));
+          do
+          {
+            //TODO-elo-note: supposing primitives contains B mesh faces
             //same operations for the intersected primitives (only one time)
-            if(primitives.back()->facet()->Label == 0xFFFFFFFF)
+            //TODO-elo-rm  if(primitives.back()->facet()->Label == 0xFFFFFFFF)
+            if(get(m_face_Label_B, primitives.back()->facet()) == 0xFFFFFFFF)
             {
+              //TODO-elo-note: push B face to Facet_Handle
               Facet_Handle.push_back(primitives.back()->facet());
-              primitives.back()->facet()->Label = j++;
-              primitives.back()->facet()->facet_begin()->Label = i++;
-              primitives.back()->facet()->facet_begin()->next()->Label = i++;
-              primitives.back()->facet()->facet_begin()->next()->next()->Label = i++;
+              //TODO-elo-rm  primitives.back()->facet()->Label = j++;
+              put(m_face_Label_B, primitives.back()->facet(), j++);
+              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->Label = i++;
+              put(m_face_Label_B, primitives.back()->facet()->facet_begin(), i++);
+              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->Label = i++;
+              put(m_face_Label_B, primitives.back()->facet()->facet_begin()->next(), i++);
+              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->next()->Label = i++;
+              put(m_face_Label_B, primitives.back()->facet()->facet_begin()->next()->next(), i++);
               Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(primitives.back()->facet()->facet_begin()), false));
             }
             //store every couple of intersected facet
-            m_Couples[pFacet->Label].insert(primitives.back()->facet()->Label);
+            //TODO-elo-rm  m_Couples[pFacet->Label].insert(primitives.back()->facet()->Label);
+            m_Couples[get(m_face_Label_A, pFacet)].insert(
+                get(m_face_Label_B, primitives.back()->facet()));
+            //TODO-elo-note: here m_Couples contains (label_A, label_B) couples
             primitives.pop_back();
           }
           while(primitives.size() != 0);
+          //TODO-elo-note: primitives is empty here
         }
       }
     }
   }
 
+#if 0 //TODO-elo-WIP
   /*! \brief Compute the intersections*/
   void ComputeIntersections()
   {
