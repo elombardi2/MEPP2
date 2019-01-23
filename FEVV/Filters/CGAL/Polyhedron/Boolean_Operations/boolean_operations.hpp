@@ -49,7 +49,7 @@ boolean_union(HalfedgeGraph &g1,
               const GeometryTraits &gt)
 {
   BoolPolyhedra< HalfedgeGraph, PointMap >(
-      g1, pm1, g2, pm2, g_out, pm_out, UNION);
+      &g1, &pm1, &g2, &pm2, &g_out, &pm_out, UNION);
 }
 
 /**

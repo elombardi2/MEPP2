@@ -217,12 +217,12 @@ public:
    * \param pMB : The second polyhedron
    * \param pMout : The result polyhedron
    * \param BOOP : The Boolean operator. Must be UNION, INTER or MINUS*/
-  BoolPolyhedra(HalfedgeGraph &pMA, //TODO-elo-rename to mA
-                PointMap      &pmA,
-                HalfedgeGraph &pMB, //TODO-elo-rename to mB
-                PointMap      &pmB,
-                HalfedgeGraph &pMout,
-                PointMap      &pm_out,
+  BoolPolyhedra(HalfedgeGraph *pMA, //TODO-elo-rename to mA
+                PointMap      *pmA,
+                HalfedgeGraph *pMB, //TODO-elo-rename to mB
+                PointMap      *pmB,
+                HalfedgeGraph *pMout,
+                PointMap      *pm_out,
                 Bool_Op BOOP)
       : m_BOOP(BOOP)
   {
@@ -310,10 +310,10 @@ private:
   /*! \brief Initialisation of the tags, and triangulation of the two input polyhedra
    * \param pMA : The first polyhedron
    * \param pMB : The second polyhedron*/
-  void Init(HalfedgeGraph &pMA, //TODO-elo-rename to mA
-            PointMap      &pmA,
-            HalfedgeGraph &pMB, //TODO-elo-rename to mB
-            PointMap      &pmB)
+  void Init(HalfedgeGraph *pMA, //TODO-elo-rename to mA
+            PointMap      *pmA,
+            HalfedgeGraph *pMB, //TODO-elo-rename to mB
+            PointMap      *pmB)
   {
     m_pA = pMA;
     m_pmA = pmA;
@@ -322,33 +322,33 @@ private:
 
     // initialize property maps
     m_vertex_Label_A =
-        FEVV::make_vertex_property_map< HalfedgeGraph, VertexId >(m_pA);
+        FEVV::make_vertex_property_map< HalfedgeGraph, VertexId >(*m_pA);
     m_vertex_Label_B =
-        FEVV::make_vertex_property_map< HalfedgeGraph, VertexId >(m_pB);
+        FEVV::make_vertex_property_map< HalfedgeGraph, VertexId >(*m_pB);
     m_face_Label_A =
-        FEVV::make_face_property_map< HalfedgeGraph, FacetId >(m_pA);
+        FEVV::make_face_property_map< HalfedgeGraph, FacetId >(*m_pA);
     m_face_Label_B =
-        FEVV::make_face_property_map< HalfedgeGraph, FacetId >(m_pB);
+        FEVV::make_face_property_map< HalfedgeGraph, FacetId >(*m_pB);
     m_face_IsExt_A =
-        FEVV::make_face_property_map< HalfedgeGraph, bool >(m_pA);
+        FEVV::make_face_property_map< HalfedgeGraph, bool >(*m_pA);
     m_face_IsExt_B =
-        FEVV::make_face_property_map< HalfedgeGraph, bool >(m_pB);
+        FEVV::make_face_property_map< HalfedgeGraph, bool >(*m_pB);
     m_face_IsOK_A =
-        FEVV::make_face_property_map< HalfedgeGraph, bool >(m_pA);
+        FEVV::make_face_property_map< HalfedgeGraph, bool >(*m_pA);
     m_face_IsOK_B =
-        FEVV::make_face_property_map< HalfedgeGraph, bool >(m_pB);
+        FEVV::make_face_property_map< HalfedgeGraph, bool >(*m_pB);
 
     // triangulation of the two input polyhedra
     // this is necessary for the AABB-tree, and simplify the computation of the
     // intersections
-    if(!m_pA.is_pure_triangle())
+    if(!m_pA->is_pure_triangle())
       triangulate(m_pA);
-    if(!m_pB.is_pure_triangle())
+    if(!m_pB->is_pure_triangle())
       triangulate(m_pB);
 
     // initialize the tags
-    for(Vertex_iterator pVertex = m_pA.vertices_begin();
-        pVertex != m_pA.vertices_end();
+    for(Vertex_iterator pVertex = m_pA->vertices_begin();
+        pVertex != m_pA->vertices_end();
         ++pVertex)
     {
       // TODO-elo-rm  pVertex->Label = 0xFFFFFFFF;
@@ -363,15 +363,15 @@ private:
       //TODO-elo-test-rm-end
       put(m_vertex_Label_A, pVertex, 0xFFFFFFFF);
     }
-    for(Vertex_iterator pVertex = m_pB.vertices_begin();
-        pVertex != m_pB.vertices_end();
+    for(Vertex_iterator pVertex = m_pB->vertices_begin();
+        pVertex != m_pB->vertices_end();
         ++pVertex)
     {
       // TODO-elo-rm  pVertex->Label = 0xFFFFFFFF;
       put(m_vertex_Label_B, pVertex, 0xFFFFFFFF);
     }
-    for(Facet_iterator pFacet = m_pA.facets_begin();
-        pFacet != m_pA.facets_end();
+    for(Facet_iterator pFacet = m_pA->facets_begin();
+        pFacet != m_pA->facets_end();
         ++pFacet)
     {
       // TODO-elo-rm  pFacet->Label = 0xFFFFFFFF;
@@ -381,8 +381,8 @@ private:
       put(m_face_IsExt_A, pFacet, false);
       put(m_face_IsOK_A, pFacet, false);
     }
-    for(Facet_iterator pFacet = m_pB.facets_begin();
-        pFacet != m_pB.facets_end();
+    for(Facet_iterator pFacet = m_pB->facets_begin();
+        pFacet != m_pB->facets_end();
         ++pFacet)
     {
       //TODO-elo-rm  pFacet->Label = 0xFFFFFFFF;
@@ -394,16 +394,22 @@ private:
     }
   }
 
-  void triangulate(HalfedgeGraph &m) //TODO-elo-make-a-separate-filter?
+  void triangulate(HalfedgeGraph *m) //TODO-elo-make-a-separate-filter?
   {
-    std::cout << "Triangulating mesh..." << std::endl;
+    { //TODO-elo-dbg-rm
+      std::cout << "Triangulating mesh..." << std::endl;
+      std::cout << "before triangulating mesh:" << std::endl;
+      std::cout << "  size_of_vertices = " << m->size_of_vertices() << std::endl;
+      std::cout << "  size_of_halfedges = " << m->size_of_halfedges() << std::endl;
+      std::cout << "  size_of_facets = " << m->size_of_facets() << std::endl;
+    }
 
-    Facet_iterator f = m.facets_begin();
-    Facet_iterator f2 = m.facets_begin();
+    Facet_iterator f = m->facets_begin();
+    Facet_iterator f2 = m->facets_begin();
     do // for (; f != this->facets_end(); f++)
     {
       f = f2;
-      if(f == m.facets_end())
+      if(f == m->facets_end())
       {
         break;
       }
@@ -414,11 +420,11 @@ private:
         int num = (int)(f->facet_degree() - 3);
         Halfedge_handle h = f->halfedge();
 
-        h = m.make_hole(h);
+        h = m->make_hole(h);
 
         Halfedge_handle g = h->next();
         g = g->next();
-        Halfedge_handle new_he = m.add_facet_to_border(h, g);
+        Halfedge_handle new_he = m->add_facet_to_border(h, g);
         g = new_he;
 
         num--;
@@ -426,19 +432,25 @@ private:
         {
           g = g->opposite();
           g = g->next();
-          Halfedge_handle new_he = m.add_facet_to_border(h, g);
+          Halfedge_handle new_he = m->add_facet_to_border(h, g);
           g = new_he;
 
           num--;
         }
 
-        m.fill_hole(h);
+        m->fill_hole(h);
       }
 
     } while(true);
 
     //TODO-elo-rm  this->compute_normals();
     //TODO-elo-rm  this->compute_type();
+    { //TODO-elo-dbg-rm
+      std::cout << "after triangulating mesh:" << std::endl;
+      std::cout << "  size_of_vertices = " << m->size_of_vertices() << std::endl;
+      std::cout << "  size_of_halfedges = " << m->size_of_halfedges() << std::endl;
+      std::cout << "  size_of_facets = " << m->size_of_facets() << std::endl;
+    }
   }
 
 
@@ -1814,11 +1826,11 @@ private:
   Bool_Op m_BOOP;
 
   /*! \brief The first input polyhedron*/
-  HalfedgeGraph m_pA; //TODO-elo-rm PolyhedronPtr m_pA;
-  PointMap m_pmA;
+  HalfedgeGraph *m_pA; //TODO-elo-rm PolyhedronPtr m_pA;
+  PointMap *m_pmA;
   /*! \brief The second input polyhedron*/
-  HalfedgeGraph m_pB; //TODO-elo-rm PolyhedronPtr m_pB;
-  PointMap m_pmB;
+  HalfedgeGraph *m_pB; //TODO-elo-rm PolyhedronPtr m_pB;
+  PointMap *m_pmB;
 
   /*! \brief  Property maps */
   typename FEVV::Vertex_pmap< HalfedgeGraph, VertexId >
