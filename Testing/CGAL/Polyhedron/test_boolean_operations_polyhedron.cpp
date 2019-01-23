@@ -23,9 +23,9 @@ int main(int argc, const char **argv)
 {
   if(argc != 3)
   {
-    std::cout
-        << "Apply boolean union, intersection and subtraction on two meshes."
-        << std::endl;
+    std::cout << "Apply boolean union, intersection and subtraction"
+                 " on two meshes."
+              << std::endl;
     std::cout << "Usage:  " << argv[0] << "  mesh_file_1  mesh_file_2"
               << std::endl;
     std::cout << "Example:  " << argv[0]
@@ -69,6 +69,10 @@ int main(int argc, const char **argv)
 
     // write result to file
     FEVV::Filters::write_mesh(output_file_union_path, m_out, pmaps_bag_out);
+    { //TODO-elo-dbg-rm
+      FEVV::Filters::write_mesh("mesh1.off", m1, pmaps_bag_1);
+      FEVV::Filters::write_mesh("mesh2.off", m2, pmaps_bag_2);
+    }
   }
 
 #if 0
