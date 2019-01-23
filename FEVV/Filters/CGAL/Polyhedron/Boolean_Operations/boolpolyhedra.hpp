@@ -244,6 +244,15 @@ public:
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
     FindCouples();
+
+#if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
+    duration_FindCouples = Timer.GetDiff();
+    Timer.Start();
+#endif // BOOLEAN_OPERATIONS_DEBUG
+
+    if(!m_Couples.empty())
+    {
+      ComputeIntersections();
     //
     /////////////////////////////////////////////////
     //                                             //
@@ -259,15 +268,6 @@ public:
     //
     //
 #if 0 //TODO-elo-WIP
-
-#if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
-    duration_FindCouples = Timer.GetDiff();
-    Timer.Start();
-#endif // BOOLEAN_OPERATIONS_DEBUG
-
-    if(!m_Couples.empty())
-    {
-      ComputeIntersections();
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
       duration_ComputeIntersections = Timer.GetDiff();
@@ -298,9 +298,9 @@ public:
       WriteData(pMout);
       ColorType();
 #endif // BOOLEAN_OPERATIONS_DEBUG
+#endif //TODO-elo-WIP
 
     }
-#endif //TODO-elo-WIP
   }
 
   /*! \brief Destructor*/
@@ -631,7 +631,6 @@ private:
     }
   }
 
-#if 0 //TODO-elo-WIP
   /*! \brief Compute the intersections*/
   void ComputeIntersections()
   {
@@ -646,6 +645,7 @@ private:
   }
 
 
+#if 0 //TODO-elo-WIP
   /*! \brief Cuts the intersected facets and starts to build the result*/
   void CutIntersectedFacets()
   {
@@ -762,7 +762,7 @@ private:
       }
     }
   }
-
+#endif //TODO-elo-WIP
 
   /*! \brief removes properly a couple from the list
    * \param A : Id of the first facet
@@ -867,7 +867,8 @@ private:
     if(edgeA != 3 && edgeB == 3)
     {
       fA2 = heA[edgeA]->opposite()->facet();
-      nA2 = m_Inter_tri[fA2->Label].norm_dir;
+      //TODO-elo-rm  nA2 = m_Inter_tri[fA2->Label].norm_dir;
+      nA2 = m_Inter_tri[get(m_face_Label_A, fA2)].norm_dir;
       p = CGAL::cross_product(nA, nB) * CGAL::cross_product(nA2, nB);
       //if p is negative, the two triangles of the first polyhedron (including edgeA) are on the same side
       //so there is no intersection
@@ -891,13 +892,15 @@ private:
         }
       }
       //the intersection between fA2 and fB is the same so this couple is removed from the list
-      rmCouple(fA2->Label, fB->Label);
+      //TODO-elo-rm  rmCouple(fA2->Label, fB->Label);
+      rmCouple(get(m_face_Label_A, fA2), get(m_face_Label_B, fB));
     }
     //if an edge of the second triangle is on the plane
     else if(edgeA == 3 && edgeB != 3)
     {
       fB2 = heB[edgeB]->opposite()->facet();
-      nB2 = m_Inter_tri[fB2->Label].norm_dir;
+      //TODO-elo-rm  nB2 = m_Inter_tri[fB2->Label].norm_dir;
+      nB2 = m_Inter_tri[get(m_face_Label_B, fB2)].norm_dir;
       p = CGAL::cross_product(nA, nB) * CGAL::cross_product(nA, nB2);
       //if p is negative, the two triangles of the second polyhedron (including edgeB) are on the same side
       //so there is no intersection
@@ -921,7 +924,8 @@ private:
         }
       }
       //the intersection between fA and fB2 is the same so this couple is removed from the list
-      rmCouple(fA->Label, fB2->Label);
+      //TODO-elo-rm  rmCouple(fA->Label, fB2->Label);
+      rmCouple(get(m_face_Label_A, fA), get(m_face_Label_B, fB2));
     }
     //if an edge of each triangle is on the plane of the other
     else if(edgeA != 3 && edgeB != 3)
@@ -937,8 +941,10 @@ private:
 
       fA2 = heA[edgeA]->opposite()->facet();
       fB2 = heB[edgeB]->opposite()->facet();
-      nA2 = m_Inter_tri[fA2->Label].norm_dir;
-      nB2 = m_Inter_tri[fB2->Label].norm_dir;
+      //TODO-elo-rm  nA2 = m_Inter_tri[fA2->Label].norm_dir;
+      nA2 = m_Inter_tri[get(m_face_Label_A, fA2)].norm_dir;
+      //TODO-elo-rm  nB2 = m_Inter_tri[fB2->Label].norm_dir;
+      nB2 = m_Inter_tri[get(m_face_Label_B, fB2)].norm_dir;
 
       nAcnB2 = CGAL::cross_product(nA, nB2);
       nA2cnB = CGAL::cross_product(nA2, nB);
@@ -1044,9 +1050,12 @@ private:
       if(!Intersection) stop = true;
 
       //the intersection between (fA, fB2), (fA2, fB) and (fA2, fB2) are the same so these couples are removed from the list
-      rmCouple(fA->Label, fB2->Label);
-      rmCouple(fA2->Label, fB->Label);
-      rmCouple(fA2->Label, fB2->Label);
+      //TODO-elo-rm  rmCouple(fA->Label, fB2->Label);
+      rmCouple(get(m_face_Label_A, fA), get(m_face_Label_B, fB2));
+      //TODO-elo-rm  rmCouple(fA2->Label, fB->Label);
+      rmCouple(get(m_face_Label_A, fA2), get(m_face_Label_B, fB));
+      //TODO-elo-rm  rmCouple(fA2->Label, fB2->Label);
+      rmCouple(get(m_face_Label_A, fA2), get(m_face_Label_B, fB2));
 
       //it is possible that the direction of the intersection have to be inverted
       if(posB_A * posA2_A > 0 && posB_A * posB2_A >= 0 && posB2_B * posA_B > 0) invert_direction = true;
@@ -1060,52 +1069,58 @@ private:
     inter[1].f = fA;
     inter[2].f = fB;
     inter[3].f = fB;
+    //TODO-elo-note:
+    //  face of inter[0] and inter[1] are from mesh A
+    //  face of inter[2] and inter[3] are from mesh B
 
     //the two intersection points between the edges of a triangle and the
     //other triangle are computed for the two triangles
     switch(posBbin)
     {
     //common intersections : one point one one side of the plane and the two other points on the other side
+    //TODO-elo-note: inside this switch,
+    //               inter[0].f and inter[1].f are from mesh A
+    //               and inter[0].he and inter[1].he are from mesh B
     case 26:
     case 37:
       inter[0].he = heB[0];
-      InterTriangleSegment(&inter[0]);
+      InterTriangleSegment(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[1];
-      InterTriangleSegment(&inter[1]);
+      InterTriangleSegment(&inter[1], m_face_Label_A, m_halfedge_Label_B);
       break;
     case 25:
     case 38:
       inter[0].he = heB[1];
-      InterTriangleSegment(&inter[0]);
+      InterTriangleSegment(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[2];
-      InterTriangleSegment(&inter[1]);
+      InterTriangleSegment(&inter[1], m_face_Label_A, m_halfedge_Label_B);
       break;
     case 22:
     case 41:
       inter[0].he = heB[2];
-      InterTriangleSegment(&inter[0]);
+      InterTriangleSegment(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[0];
-      InterTriangleSegment(&inter[1]);
+      InterTriangleSegment(&inter[1], m_face_Label_A, m_halfedge_Label_B);
       break;
     //particular cases : one point on the plane, one point one one side and one point on the other side
     case 6:
     case 9:
       inter[0].he = heB[2];
-      InterTriangleSegment(&inter[0]);
+      InterTriangleSegment(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[0];
       IsInTriangle(&inter[1]);
       break;
     case 18:
     case 33:
       inter[0].he = heB[0];
-      InterTriangleSegment(&inter[0]);
+      InterTriangleSegment(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[1];
       IsInTriangle(&inter[1]);
       break;
     case 24:
     case 36:
       inter[0].he = heB[1];
-      InterTriangleSegment(&inter[0]);
+      InterTriangleSegment(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[2];
       IsInTriangle(&inter[1]);
       break;
@@ -1138,46 +1153,49 @@ private:
     switch(posAbin)
     {
     //common intersections : one point one one side of the plane and the two other points on the other side
+    //TODO-elo-note: inside this switch,
+    //               inter[2].f and inter[3].f are from mesh B
+    //               and inter[2].he and inter[3].he are from mesh A
     case 26:
     case 37:
       inter[2].he = heA[0];
-      InterTriangleSegment(&inter[2]);
+      InterTriangleSegment(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[1];
-      InterTriangleSegment(&inter[3]);
+      InterTriangleSegment(&inter[3], m_face_Label_B, m_halfedge_Label_A);
       break;
     case 25:
     case 38:
       inter[2].he = heA[1];
-      InterTriangleSegment(&inter[2]);
+      InterTriangleSegment(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[2];
-      InterTriangleSegment(&inter[3]);
+      InterTriangleSegment(&inter[3], m_face_Label_B, m_halfedge_Label_A);
       break;
     case 22:
     case 41:
       inter[2].he = heA[2];
-      InterTriangleSegment(&inter[2]);
+      InterTriangleSegment(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[0];
-      InterTriangleSegment(&inter[3]);
+      InterTriangleSegment(&inter[3], m_face_Label_B, m_halfedge_Label_A);
       break;
     //particular cases : one point on the plane, one point one one side and one point on the other side
     case 6:
     case 9:
       inter[2].he = heA[2];
-      InterTriangleSegment(&inter[2]);
+      InterTriangleSegment(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[0];
       IsInTriangle(&inter[3]);
       break;
     case 18:
     case 33:
       inter[2].he = heA[0];
-      InterTriangleSegment(&inter[2]);
+      InterTriangleSegment(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[1];
       IsInTriangle(&inter[3]);
       break;
     case 24:
     case 36:
       inter[2].he = heA[1];
-      InterTriangleSegment(&inter[2]);
+      InterTriangleSegment(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[2];
       IsInTriangle(&inter[3]);
       break;
@@ -1214,7 +1232,7 @@ private:
       std::vector<InterId> ptInter;
       Get_Segment(inter, ptInter);
       //and we build the opposite segment in ptInterInv
-      vector<InterId> ptInterInv;
+      std::vector<InterId> ptInterInv;
       ptInterInv.push_back(ptInter[1]);
       ptInterInv.push_back(ptInter[0]);
 
@@ -1224,22 +1242,34 @@ private:
         switch(m_BOOP)
         {
         case UNION:
-          m_Inter_tri[fA->Label].CutList.push_back(ptInter);
-          if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInter);
-          m_Inter_tri[fB->Label].CutList.push_back(ptInterInv);
-          if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  m_Inter_tri[fA->Label].CutList.push_back(ptInter);
+          m_Inter_tri[get(m_face_Label_A, fA)].CutList.push_back(ptInter);
+          //TODO-elo-rm  if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInter);
+          if(edgeA != 3) m_Inter_tri[get(m_face_Label_A, fA2)].CutList.push_back(ptInter);
+          //TODO-elo-rm  m_Inter_tri[fB->Label].CutList.push_back(ptInterInv);
+          m_Inter_tri[get(m_face_Label_B, fB)].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInterInv);
+          if(edgeB != 3) m_Inter_tri[get(m_face_Label_B, fB2)].CutList.push_back(ptInterInv);
           break;
         case INTER:
-          m_Inter_tri[fA->Label].CutList.push_back(ptInterInv);
-          if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInterInv);
-          m_Inter_tri[fB->Label].CutList.push_back(ptInter);
-          if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInter);
+          //TODO-elo-rm  m_Inter_tri[fA->Label].CutList.push_back(ptInterInv);
+          m_Inter_tri[get(m_face_Label_A, fA)].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInterInv);
+          if(edgeA != 3) m_Inter_tri[get(m_face_Label_A, fA2)].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  m_Inter_tri[fB->Label].CutList.push_back(ptInter);
+          m_Inter_tri[get(m_face_Label_B, fB)].CutList.push_back(ptInter);
+          //TODO-elo-rm  if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInter);
+          if(edgeB != 3) m_Inter_tri[get(m_face_Label_B, fB2)].CutList.push_back(ptInter);
           break;
         case MINUS:
-          m_Inter_tri[fA->Label].CutList.push_back(ptInter);
-          if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInter);
-          m_Inter_tri[fB->Label].CutList.push_back(ptInter);
-          if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInter);
+          //TODO-elo-rm  m_Inter_tri[fA->Label].CutList.push_back(ptInter);
+          m_Inter_tri[get(m_face_Label_A, fA)].CutList.push_back(ptInter);
+          //TODO-elo-rm  if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInter);
+          if(edgeA != 3) m_Inter_tri[get(m_face_Label_A, fA2)].CutList.push_back(ptInter);
+          //TODO-elo-rm  m_Inter_tri[fB->Label].CutList.push_back(ptInter);
+          m_Inter_tri[get(m_face_Label_B, fB)].CutList.push_back(ptInter);
+          //TODO-elo-rm  if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInter);
+          if(edgeB != 3) m_Inter_tri[get(m_face_Label_B, fB2)].CutList.push_back(ptInter);
           break;
         }
       }
@@ -1248,22 +1278,36 @@ private:
         switch(m_BOOP)
         {
         case UNION:
-          m_Inter_tri[fA->Label].CutList.push_back(ptInterInv);
-          if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInterInv);
-          m_Inter_tri[fB->Label].CutList.push_back(ptInter);
-          if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInter);
+          //TODO-elo-rm  m_Inter_tri[fA->Label].CutList.push_back(ptInterInv);
+          m_Inter_tri[get(m_face_Label_A, fA)].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  m_Inter_tri[fA->Label].CutList.push_back(ptInterInv);
+          m_Inter_tri[get(m_face_Label_A, fA)].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInterInv);
+          if(edgeA != 3) m_Inter_tri[get(m_face_Label_A, fA2)].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  m_Inter_tri[fB->Label].CutList.push_back(ptInter);
+          m_Inter_tri[get(m_face_Label_B, fB)].CutList.push_back(ptInter);
+          //TODO-elo-rm  if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInter);
+          if(edgeB != 3) m_Inter_tri[get(m_face_Label_B, fB2)].CutList.push_back(ptInter);
           break;
         case INTER:
-          m_Inter_tri[fA->Label].CutList.push_back(ptInter);
-          if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInter);
-          m_Inter_tri[fB->Label].CutList.push_back(ptInterInv);
-          if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  m_Inter_tri[fA->Label].CutList.push_back(ptInter);
+          m_Inter_tri[get(m_face_Label_A, fA)].CutList.push_back(ptInter);
+          //TODO-elo-rm  if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInter);
+          if(edgeA != 3) m_Inter_tri[get(m_face_Label_A, fA2)].CutList.push_back(ptInter);
+          //TODO-elo-rm  m_Inter_tri[fB->Label].CutList.push_back(ptInterInv);
+          m_Inter_tri[get(m_face_Label_B, fB)].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInterInv);
+          if(edgeB != 3) m_Inter_tri[get(m_face_Label_B, fB2)].CutList.push_back(ptInterInv);
           break;
         case MINUS:
-          m_Inter_tri[fA->Label].CutList.push_back(ptInterInv);
-          if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInterInv);
-          m_Inter_tri[fB->Label].CutList.push_back(ptInterInv);
-          if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  m_Inter_tri[fA->Label].CutList.push_back(ptInterInv);
+          m_Inter_tri[get(m_face_Label_A, fA)].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  if(edgeA != 3) m_Inter_tri[fA2->Label].CutList.push_back(ptInterInv);
+          if(edgeA != 3) m_Inter_tri[get(m_face_Label_A, fA2)].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  m_Inter_tri[fB->Label].CutList.push_back(ptInterInv);
+          m_Inter_tri[get(m_face_Label_B, fB)].CutList.push_back(ptInterInv);
+          //TODO-elo-rm  if(edgeB != 3) m_Inter_tri[fB2->Label].CutList.push_back(ptInterInv);
+          if(edgeB != 3) m_Inter_tri[get(m_face_Label_B, fB2)].CutList.push_back(ptInterInv);
           break;
         }
       }
@@ -1272,14 +1316,18 @@ private:
 
   /*! \brief Compute the intersection between a facet and a halfedge
    * \param inter : A pointer to an Info_Inter structure.*/
-  void InterTriangleSegment(Info_Inter* inter)
+  void InterTriangleSegment(Info_Inter* inter, const PointMap &face_Label, const PointMap &halfedge_Label)
   {
     Facet_handle f = inter->f;
     Halfedge_handle he = inter->he;
+    auto f_Label = get(face_Label, f); //ELO+
+    auto he_Label = get(halfedge_Label, he); //ELO+
     //if the intersection has been computed, the function returns directly the Id of the intersection
-    if(m_Inter_tri[f->Label].RefInter.count(he->Label) != 0)
+    //TODO-elo-rm  if(m_Inter_tri[f->Label].RefInter.count(he->Label) != 0)
+    if(m_Inter_tri[f_Label].RefInter.count(he_Label) != 0)
     {
-      inter->Id = m_Inter_tri[f->Label].RefInter[he->Label];
+      //TODO-elo-rm  inter->Id = m_Inter_tri[f->Label].RefInter[he->Label];
+      inter->Id = m_Inter_tri[f_Label].RefInter[he_Label];
       return;
     }
     //else, the calculation is done
@@ -1338,6 +1386,7 @@ private:
   }
 
 
+#if 0 //TODO-elo-WIP
   /*! \brief Finds the position of a point in a 3d triangle
    * \param inter : A pointer to an Info_Inter structure*/
   void IsInTriangle(Info_Inter* inter)
