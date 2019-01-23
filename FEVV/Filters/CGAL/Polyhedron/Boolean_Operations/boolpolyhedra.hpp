@@ -1450,7 +1450,6 @@ private:
     if(w == 0) inter->res += 4;  //intersection on he(2)
   }
 
-#if 0 //TODO-elo-WIP
   /*! \brief Verify that the intersection is a segment
    * \param inter : A pointer to four Info_Inter structures
    * \return true if two distinct points are found in the four intersections computed*/
@@ -1459,7 +1458,7 @@ private:
     bool point = false; //true if a point is founded
     Point3d_exact pt; //the point founded
     bool id = false; //true if an Id is founded
-                unsigned long Id = 0; //the Id founded // MT
+    unsigned long Id = 0; // the Id founded // MT
 
     //each intersection is checked separately.
     //first intersection
@@ -1545,6 +1544,7 @@ private:
     return false;
   }
 
+#if 0 //TODO-elo-WIP
   /*! \brief Extracts the segment from a set of four intersection points and store these points in the list of intersecion points
    * \n There must be two valid and distinct points in the set
    * \param inter : A pointer to four Info_Inter structure
