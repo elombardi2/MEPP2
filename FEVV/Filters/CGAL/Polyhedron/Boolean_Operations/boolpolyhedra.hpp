@@ -401,6 +401,16 @@ private:
       put(m_face_IsExt_B, pFacet, false);
       put(m_face_IsOK_B, pFacet, false);
     }
+
+    { // TODO-elo-rm-dbg-display
+      // init HE property maps to be able to compare
+      // with Mepp1
+      typename HalfedgeGraph::Halfedge_iterator pHe;
+      for(pHe = m_pA->halfedges_begin(); pHe != m_pA->halfedges_end(); pHe++)
+        put(m_halfedge_Label_A, pHe, 42424242);
+      for(pHe = m_pB->halfedges_begin(); pHe != m_pB->halfedges_end(); pHe++)
+        put(m_halfedge_Label_B, pHe, 42424242);
+    }
   }
 
   void triangulate(HalfedgeGraph *m) //TODO-elo-make-a-separate-filter?
@@ -602,6 +612,22 @@ private:
           //TODO-elo-note: primitives is empty here
         }
       }
+    }
+
+    { //TODO-elo-rm-dbg-display
+      std::cout << "end of FindCouples(), mesh A, face Label property:" << std::endl;
+      for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
+          std::cout << get(m_face_Label_A, pFacet) << std::endl;
+      std::cout << "end of FindCouples(), mesh B, face Label property:" << std::endl;
+      for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
+          std::cout << get(m_face_Label_B, pFacet) << std::endl;
+      std::cout << "end of FindCouples(), mesh A, halfedge Label property:" << std::endl;
+      typename HalfedgeGraph::Halfedge_iterator pHe;
+      for(pHe = m_pA->halfedges_begin(); pHe != m_pA->halfedges_end(); pHe++)
+          std::cout << get(m_halfedge_Label_A, pHe) << std::endl;
+      std::cout << "end of FindCouples(), mesh B, halfedge Label property:" << std::endl;
+      for(pHe = m_pB->halfedges_begin(); pHe != m_pB->halfedges_end(); pHe++)
+          std::cout << get(m_halfedge_Label_B, pHe) << std::endl;
     }
   }
 
