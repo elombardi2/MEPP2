@@ -325,6 +325,12 @@ private:
         FEVV::make_vertex_property_map< HalfedgeGraph, VertexId >(*m_pA);
     m_vertex_Label_B =
         FEVV::make_vertex_property_map< HalfedgeGraph, VertexId >(*m_pB);
+
+    m_halfedge_Label_A =
+        FEVV::make_halfedge_property_map< HalfedgeGraph, HalfedgeId >(*m_pA);
+    m_halfedge_Label_B =
+        FEVV::make_halfedge_property_map< HalfedgeGraph, HalfedgeId >(*m_pB);
+
     m_face_Label_A =
         FEVV::make_face_property_map< HalfedgeGraph, FacetId >(*m_pA);
     m_face_Label_B =
@@ -463,7 +469,7 @@ private:
   {
     //A AABB-tree is built on the facets of one of the polyhedra. A collision test is done with each facet of the other polyhedron.
     Facet_iterator pFacet =  NULL;
-    std::list<AABB_Tree::Primitive_id> primitives;
+    std::list<typename AABB_Tree::Primitive_id> primitives;
     std::list<Triangle> triangles;
 
     HalfedgeId i = 0;
@@ -494,11 +500,11 @@ private:
           //TODO-elo-rm  pFacet->Label = j++;
           put(m_face_Label_B, pFacet, j++);
           //TODO-elo-rm  pFacet->facet_begin()->Label = i++;
-          put(m_face_Label_B, pFacet->facet_begin(), i++);
+          put(m_halfedge_Label_B, pFacet->facet_begin(), i++);
           //TODO-elo-rm  pFacet->facet_begin()->next()->Label = i++;
-          put(m_face_Label_B, pFacet->facet_begin()->next(), i++);
+          put(m_halfedge_Label_B, pFacet->facet_begin()->next(), i++);
           //TODO-elo-rm  pFacet->facet_begin()->next()->next()->Label = i++;
-          put(m_face_Label_B, pFacet->facet_begin()->next()->next(), i++);
+          put(m_halfedge_Label_B, pFacet->facet_begin()->next()->next(), i++);
           // creation of a Triangle_Cut structure to store the informations
           // about the intersections
           Inter_tri.push_back(Triangle_Cut(
@@ -515,11 +521,11 @@ private:
               //TODO-elo-rm  primitives.back()->facet()->Label = j++;
               put(m_face_Label_A, primitives.back()->facet(), j++);
               //TODO-elo-rm  primitives.back()->facet()->facet_begin()->Label = i++;
-              put(m_face_Label_A, primitives.back()->facet()->facet_begin(), i++);
+              put(m_halfedge_Label_A, primitives.back()->facet()->facet_begin(), i++);
               //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->Label = i++;
-              put(m_face_Label_A, primitives.back()->facet()->facet_begin()->next(), i++);
+              put(m_halfedge_Label_A, primitives.back()->facet()->facet_begin()->next(), i++);
               //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->next()->Label = i++;
-              put(m_face_Label_A, primitives.back()->facet()->facet_begin()->next()->next(), i++);
+              put(m_halfedge_Label_A, primitives.back()->facet()->facet_begin()->next()->next(), i++);
               Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(primitives.back()->facet()->facet_begin()), true));
             }
             //store every couple of intersected facet
@@ -557,11 +563,11 @@ private:
           //TODO-elo-rm  pFacet->Label = j++;
           put(m_face_Label_A, pFacet, j++);
           //TODO-elo-rm  pFacet->facet_begin()->Label = i++;
-          put(m_face_Label_A, pFacet->facet_begin(), i++);
+          put(m_halfedge_Label_A, pFacet->facet_begin(), i++);
           //TODO-elo-rm  pFacet->facet_begin()->next()->Label = i++;
-          put(m_face_Label_A, pFacet->facet_begin()->next(), i++);
+          put(m_halfedge_Label_A, pFacet->facet_begin()->next(), i++);
           //TODO-elo-rm  pFacet->facet_begin()->next()->next()->Label = i++;
-          put(m_face_Label_A, pFacet->facet_begin()->next()->next(), i++);
+          put(m_halfedge_Label_A, pFacet->facet_begin()->next()->next(), i++);
           // creation of a Triangle_Cut structure to store the informations
           // about the intersections
           Inter_tri.push_back(Triangle_Cut(
@@ -578,11 +584,11 @@ private:
               //TODO-elo-rm  primitives.back()->facet()->Label = j++;
               put(m_face_Label_B, primitives.back()->facet(), j++);
               //TODO-elo-rm  primitives.back()->facet()->facet_begin()->Label = i++;
-              put(m_face_Label_B, primitives.back()->facet()->facet_begin(), i++);
+              put(m_halfedge_Label_B, primitives.back()->facet()->facet_begin(), i++);
               //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->Label = i++;
-              put(m_face_Label_B, primitives.back()->facet()->facet_begin()->next(), i++);
+              put(m_halfedge_Label_B, primitives.back()->facet()->facet_begin()->next(), i++);
               //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->next()->Label = i++;
-              put(m_face_Label_B, primitives.back()->facet()->facet_begin()->next()->next(), i++);
+              put(m_halfedge_Label_B, primitives.back()->facet()->facet_begin()->next()->next(), i++);
               Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(primitives.back()->facet()->facet_begin()), false));
             }
             //store every couple of intersected facet
@@ -1887,6 +1893,12 @@ private:
       m_vertex_Label_A; // ELO replace pVertex->Label
   typename FEVV::Vertex_pmap< HalfedgeGraph, VertexId >
       m_vertex_Label_B; // ELO replace pVertex->Label
+
+  typename FEVV::Halfedge_pmap< HalfedgeGraph, HalfedgeId >
+      m_halfedge_Label_A; // ELO replace facet_begin()->Label
+  typename FEVV::Halfedge_pmap< HalfedgeGraph, HalfedgeId >
+      m_halfedge_Label_B; // ELO replace facet_begin()->Label
+
   typename FEVV::Face_pmap< HalfedgeGraph, FacetId >
       m_face_Label_A; // ELO replace pFacet->Label
   typename FEVV::Face_pmap< HalfedgeGraph, FacetId >
