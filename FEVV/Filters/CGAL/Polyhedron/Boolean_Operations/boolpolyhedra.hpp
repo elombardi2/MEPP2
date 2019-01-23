@@ -359,7 +359,10 @@ private:
       //typename HalfedgeGraph::Vertex_handle vh;
       //int k = vh;
       //int l = pVertex;
+      //typename GraphTraits::vertex_iterator vi;
+      //int z = vi;
       // -> vd = same type as vh and pVertex!!!
+      // -> vi = CGAL::Prevent_deref<GraphTraits::vertex_descriptor>
       //TODO-elo-test-rm-end
       put(m_vertex_Label_A, pVertex, 0xFFFFFFFF);
     }
