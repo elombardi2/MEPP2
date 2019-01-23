@@ -1108,43 +1108,43 @@ private:
       inter[0].he = heB[2];
       InterTriangleSegment(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[0];
-      IsInTriangle(&inter[1]);
+      IsInTriangle(&inter[1], m_face_Label_A, m_halfedge_Label_B);
       break;
     case 18:
     case 33:
       inter[0].he = heB[0];
       InterTriangleSegment(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[1];
-      IsInTriangle(&inter[1]);
+      IsInTriangle(&inter[1], m_face_Label_A, m_halfedge_Label_B);
       break;
     case 24:
     case 36:
       inter[0].he = heB[1];
       InterTriangleSegment(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[2];
-      IsInTriangle(&inter[1]);
+      IsInTriangle(&inter[1], m_face_Label_A, m_halfedge_Label_B);
       break;
     //particular case : two points on the plane
     case 1:
     case 2:
       inter[0].he = heB[0];
-      IsInTriangle(&inter[0]);
+      IsInTriangle(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[2]->opposite();
-      IsInTriangle(&inter[1]);
+      IsInTriangle(&inter[1], m_face_Label_A, m_halfedge_Label_B);
       break;
     case 16:
     case 32:
       inter[0].he = heB[1];
-      IsInTriangle(&inter[0]);
+      IsInTriangle(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[0]->opposite();
-      IsInTriangle(&inter[1]);
+      IsInTriangle(&inter[1], m_face_Label_A, m_halfedge_Label_B);
       break;
     case 4:
     case 8:
       inter[0].he = heB[2];
-      IsInTriangle(&inter[0]);
+      IsInTriangle(&inter[0], m_face_Label_A, m_halfedge_Label_B);
       inter[1].he = heB[1]->opposite();
-      IsInTriangle(&inter[1]);
+      IsInTriangle(&inter[1], m_face_Label_A, m_halfedge_Label_B);
       break;
     default:
       return;
@@ -1183,43 +1183,43 @@ private:
       inter[2].he = heA[2];
       InterTriangleSegment(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[0];
-      IsInTriangle(&inter[3]);
+      IsInTriangle(&inter[3], m_face_Label_B, m_halfedge_Label_A);
       break;
     case 18:
     case 33:
       inter[2].he = heA[0];
       InterTriangleSegment(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[1];
-      IsInTriangle(&inter[3]);
+      IsInTriangle(&inter[3], m_face_Label_B, m_halfedge_Label_A);
       break;
     case 24:
     case 36:
       inter[2].he = heA[1];
       InterTriangleSegment(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[2];
-      IsInTriangle(&inter[3]);
+      IsInTriangle(&inter[3], m_face_Label_B, m_halfedge_Label_A);
       break;
     //particular case : two points on the plane
     case 1:
     case 2:
       inter[2].he = heA[0];
-      IsInTriangle(&inter[2]);
+      IsInTriangle(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[2]->opposite();
-      IsInTriangle(&inter[3]);
+      IsInTriangle(&inter[3], m_face_Label_B, m_halfedge_Label_A);
       break;
     case 16:
     case 32:
       inter[2].he = heA[1];
-      IsInTriangle(&inter[2]);
+      IsInTriangle(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[0]->opposite();
-      IsInTriangle(&inter[3]);
+      IsInTriangle(&inter[3], m_face_Label_B, m_halfedge_Label_A);
       break;
     case 4:
     case 8:
       inter[2].he = heA[2];
-      IsInTriangle(&inter[2]);
+      IsInTriangle(&inter[2], m_face_Label_B, m_halfedge_Label_A);
       inter[3].he = heA[1]->opposite();
-      IsInTriangle(&inter[3]);
+      IsInTriangle(&inter[3], m_face_Label_B, m_halfedge_Label_A);
       break;
     default:
       return;
@@ -1316,7 +1316,7 @@ private:
 
   /*! \brief Compute the intersection between a facet and a halfedge
    * \param inter : A pointer to an Info_Inter structure.*/
-  void InterTriangleSegment(Info_Inter* inter, const PointMap &face_Label, const PointMap &halfedge_Label)
+  void InterTriangleSegment(Info_Inter* inter, const typename FEVV::Face_pmap< HalfedgeGraph, FacetId > &face_Label, const typename FEVV::Halfedge_pmap< HalfedgeGraph, HalfedgeId > &halfedge_Label)
   {
     Facet_handle f = inter->f;
     Halfedge_handle he = inter->he;
@@ -1386,17 +1386,20 @@ private:
   }
 
 
-#if 0 //TODO-elo-WIP
   /*! \brief Finds the position of a point in a 3d triangle
    * \param inter : A pointer to an Info_Inter structure*/
-  void IsInTriangle(Info_Inter* inter)
+  void IsInTriangle(Info_Inter* inter, const typename FEVV::Face_pmap< HalfedgeGraph, FacetId > &face_Label, const typename FEVV::Halfedge_pmap< HalfedgeGraph, HalfedgeId > &halfedge_Label)
   {
     Facet_handle f = inter->f;
     Halfedge_handle he = inter->he;
+    auto f_Label = get(face_Label, f); //ELO+
+    auto he_Label = get(halfedge_Label, he); //ELO+
     //if the intersection has been computed, the function returns directly the Id of the intersection
-    if(m_Inter_tri[f->Label].RefInter.count(he->Label) != 0)
+    //TODO-elo-rm  if(m_Inter_tri[f->Label].RefInter.count(he->Label) != 0)
+    if(m_Inter_tri[f_Label].RefInter.count(he_Label) != 0)
     {
-      inter->Id = m_Inter_tri[f->Label].RefInter[he->Label];
+      //TODO-elo-rm  inter->Id = m_Inter_tri[f->Label].RefInter[he->Label];
+      inter->Id = m_Inter_tri[f_Label].RefInter[he_Label];
       return;
     }
     //else, the calculation is done
@@ -1411,7 +1414,8 @@ private:
     Point3d_exact v1 = point_to_exact(f->facet_begin()->next()->vertex()->point());
     Point3d_exact v2 = point_to_exact(f->facet_begin()->next()->next()->vertex()->point());
 
-    Vector_exact N = m_Inter_tri[f->Label].norm_dir;
+    //TODO-elo-rm  Vector_exact N = m_Inter_tri[f->Label].norm_dir;
+    Vector_exact N = m_Inter_tri[f_Label].norm_dir;
     num_type u, v, w;
 
     u = N * CGAL::cross_product(v0 - v2, p - v2);
@@ -1446,6 +1450,7 @@ private:
     if(w == 0) inter->res += 4;  //intersection on he(2)
   }
 
+#if 0 //TODO-elo-WIP
   /*! \brief Verify that the intersection is a segment
    * \param inter : A pointer to four Info_Inter structures
    * \return true if two distinct points are found in the four intersections computed*/
