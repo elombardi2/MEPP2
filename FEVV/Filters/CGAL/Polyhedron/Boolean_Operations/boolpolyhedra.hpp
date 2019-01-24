@@ -33,7 +33,7 @@
  * \brief Kernel used for the computations in a AABB-tree
  */
 //typedef CGAL::Simple_cartesian<num_type>          AABB_Kernel;
-typedef CGAL::Simple_cartesian<double>          AABB_Kernel;
+typedef CGAL::Simple_cartesian<double>           AABB_Kernel;
 
 /*! \class Enriched_Triangle
  *  \brief An enriched triangle
@@ -237,6 +237,21 @@ public:
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
     Init(pMA, pmA, pMB, pmB);
+    //
+    /////////////////////////////////////////////////
+    //                                             //
+    //        WIP       WIP   WIP   WIPWIP         //
+    //        WIP       WIP         WIP WIP        //
+    //        WIP       WIP   WIP   WIPWIP         //
+    //         WIP WIP WIP    WIP   WIP            //
+    //           WIP WIP      WIP   WIP            //
+    //                                             //
+    /////////////////////////////////////////////////
+    //
+    //
+    //
+    //
+#if 0 //TODO-elo-WIP
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
     duration_Init = Timer.GetDiff();
@@ -253,21 +268,6 @@ public:
     if(!m_Couples.empty())
     {
       ComputeIntersections();
-    //
-    /////////////////////////////////////////////////
-    //                                             //
-    //        WIP       WIP   WIP   WIPWIP         //
-    //        WIP       WIP         WIP WIP        //
-    //        WIP       WIP   WIP   WIPWIP         //
-    //         WIP WIP WIP    WIP   WIP            //
-    //           WIP WIP      WIP   WIP            //
-    //                                             //
-    /////////////////////////////////////////////////
-    //
-    //
-    //
-    //
-#if 0 //TODO-elo-WIP
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
       duration_ComputeIntersections = Timer.GetDiff();
@@ -298,9 +298,9 @@ public:
       WriteData(pMout);
       ColorType();
 #endif // BOOLEAN_OPERATIONS_DEBUG
-#endif //TODO-elo-WIP
 
     }
+#endif //TODO-elo-WIP
   }
 
   /*! \brief Destructor*/
@@ -473,6 +473,7 @@ private:
   }
 
 
+#if 0 //TODO-elo-WIP
   /*! \brief Finds every couple of facets between the two input polyhedra that intersects
    * \brief Each couple is stored in the member m_Couples*/
   void FindCouples()
@@ -645,7 +646,6 @@ private:
   }
 
 
-#if 0 //TODO-elo-WIP
   /*! \brief Cuts the intersected facets and starts to build the result*/
   void CutIntersectedFacets()
   {
@@ -762,7 +762,6 @@ private:
       }
     }
   }
-#endif //TODO-elo-WIP
 
   /*! \brief removes properly a couple from the list
    * \param A : Id of the first facet
@@ -1837,7 +1836,6 @@ private:
     }
   }
 
-#if 0 //TODO-elo-WIP
   /*! \brief Add a facet to the result
    * \param pFacet : A handle to the facet to add
    * \param facet_from_A : must be true if the facet belongs to the first polyhedron*/
