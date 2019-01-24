@@ -1544,7 +1544,6 @@ private:
     return false;
   }
 
-#if 0 //TODO-elo-WIP
   /*! \brief Extracts the segment from a set of four intersection points and store these points in the list of intersecion points
    * \n There must be two valid and distinct points in the set
    * \param inter : A pointer to four Info_Inter structure
@@ -1591,7 +1590,7 @@ private:
     m_InterPts.push_back(inter->pt);
 
     //add this point as a vertex of the result
-                ppbuilder.add_vertex(point_to_double(inter->pt), inter->Id);
+    ppbuilder.add_vertex(point_to_double(inter->pt), inter->Id);
 
     //if the intersection is on the vertex pointed by the halfedge (he), we update the Id (Label) of this vertex
     if(inter->IsOnVertex) he->vertex()->Label = I;
@@ -1838,6 +1837,7 @@ private:
     }
   }
 
+#if 0 //TODO-elo-WIP
   /*! \brief Add a facet to the result
    * \param pFacet : A handle to the facet to add
    * \param facet_from_A : must be true if the facet belongs to the first polyhedron*/
