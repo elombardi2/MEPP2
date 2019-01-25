@@ -23,6 +23,7 @@
 #include "FEVV/Wrappings/Geometry_traits.h"
 #include "FEVV/Wrappings/properties.h"
 #include <list>
+#include <stack>
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
 #include "Time_measure.h"
@@ -231,6 +232,13 @@ public:
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
       CutIntersectedFacets();
+
+#if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
+      duration_CutIntersectedFacets = Timer.GetDiff();
+      Timer.Start();
+#endif // BOOLEAN_OPERATIONS_DEBUG
+
+      PropagateFacets();
     //
     /////////////////////////////////////////////////
     //                                             //
@@ -246,13 +254,6 @@ public:
     //
     //
 #if 0 //TODO-elo-WIP
-
-#if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
-      duration_CutIntersectedFacets = Timer.GetDiff();
-      Timer.Start();
-#endif // BOOLEAN_OPERATIONS_DEBUG
-
-      PropagateFacets();
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
       duration_PropagateFacets = Timer.GetDiff();
@@ -569,12 +570,11 @@ private:
   }
   
 
-#if 0 //TODO-elo-rm
   /*! \brief Complete the building of the result*/
   void PropagateFacets()
   {
     Facet_handle pFacet = NULL, f = NULL, nf = NULL;
-    stack<Facet_handle> tmpTriangles;
+    std::stack<Facet_handle> tmpTriangles;
 
     //add to a stack the intersected facets that have been cut during CutIntersectedFacets
     for (pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
@@ -645,7 +645,6 @@ private:
       }
     }
   }
-#endif //TODO-elo-WIP
   
 
   /*! \brief removes properly a couple from the list
@@ -1675,7 +1674,6 @@ private:
   }
 
 
-#if 0 //TODO-elo-rm
   /*! \brief Add a facet to the result
    * \param pFacet : A handle to the facet to add
    * \param facet_from_A : must be true if the facet belongs to the first polyhedron*/
@@ -1691,10 +1689,10 @@ private:
       //add the intersection points to the triangulation
       for(std::set<InterId>::iterator i = TriCut.PtList.begin();i != TriCut.PtList.end();++i)
       {
-                            T.add_new_pt(m_InterPts[*i], (unsigned long &)*i);    // MT: ajout cast
+        T.add_new_pt(m_InterPts[*i], (unsigned long &)*i);    // MT: ajout cast
       }
       //get all the triangles of the triangulation
-                        vector<vector<unsigned long> > Tri_set = T.get_all_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false);
+      std::vector<std::vector<unsigned long> > Tri_set = T.get_all_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false);
       //add these triangles to the result
       ppbuilder.add_triangle(Tri_set, he);
     }
@@ -1711,7 +1709,7 @@ private:
     pFacet->facet_begin()->next()->next()->opposite()->facet()->IsExt = true;
   } 
   
-#ifdef BOOLEAN_OPERATIONS_DEBUG
+#if 0 //TODO-elo-restore  #ifdef BOOLEAN_OPERATIONS_DEBUG
   
   /*! \brief Colors the facets of the input polyhedra
    * \n The intersected facets are red
@@ -1794,8 +1792,6 @@ private:
   }
   
 #endif // BOOLEAN_OPERATIONS_DEBUG
-
-#endif //TODO-elo-WIP
 
 
 
