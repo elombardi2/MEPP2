@@ -13,6 +13,7 @@
 #include <CGAL/AABB_traits.h>
 #include "boolean_operations_definitions.hpp"
 #include "boolean_operations_properties.h"
+#include "boolean_operations_enriched_polyhedron.hpp"
 //TODO-elo-restore  #include "CPolyhedron_from_polygon_builder_3.h"
 //TODO-elo-restore  #include "Boolean_Operations_triangulation.h"
 
@@ -298,6 +299,9 @@ private:
     m_pB = pMB;
     m_pmB = pmB;
 
+    EnrichedPolyhedron test;
+
+#if 0 //TODO-elo-restore
     // initialize property maps
     m_vertex_Label_A =
         FEVV::make_vertex_property_map< HalfedgeGraph, VertexId >(*m_pA);
@@ -389,8 +393,10 @@ private:
       for(pHe = m_pB->halfedges_begin(); pHe != m_pB->halfedges_end(); pHe++)
         put(m_halfedge_Label_B, pHe, 42424242);
     }
+#endif
   }
 
+#if 0 //TODO-elo-WIP
   void triangulate(HalfedgeGraph *m) //TODO-elo-make-a-separate-filter?
   {
     { //TODO-elo-dbg-rm
@@ -451,7 +457,6 @@ private:
   }
 
 
-#if 0 //TODO-elo-WIP
   /*! \brief Finds every couple of facets between the two input polyhedra that intersects
    * \brief Each couple is stored in the member m_Couples*/
   void FindCouples()
