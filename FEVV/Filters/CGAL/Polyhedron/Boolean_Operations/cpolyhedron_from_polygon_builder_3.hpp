@@ -10,6 +10,13 @@
 //TODO-elo-rm  #include "../../../../mepp/Polyhedron/polyhedron.h"
 #include <CGAL/Polyhedron_incremental_builder_3.h>
 
+#include "boolean_operations_enriched_polyhedron.hpp"
+
+
+typedef typename EnrichedPolyhedron::Halfedge_handle Halfedge_handle;
+typedef typename EnrichedPolyhedron::Facet_handle    Facet_handle;
+typedef typename EnrichedPolyhedron::Point_3         Point3d;
+
 /*!
  * \class CPolyhedron_from_polygon_builder_3
  * \brief A polyhedron incremental builder
@@ -95,7 +102,7 @@ public:
    * \param T : The list of triangle to add. Each triangle is described as a list of three indices
    * \param he : First halfedge handle of the facet
    */
-  void add_triangle(vector< vector< unsigned long > > &T, Halfedge_handle &he)
+  void add_triangle(std::vector< std::vector< unsigned long > > &T, Halfedge_handle &he)
   {
     //For each triangle of the vector T...
     for(unsigned int i = 0;i != T.size();++i)

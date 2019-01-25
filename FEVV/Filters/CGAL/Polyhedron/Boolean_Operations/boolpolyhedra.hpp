@@ -14,7 +14,7 @@
 #include "boolean_operations_definitions.hpp"
 #include "boolean_operations_properties.h"
 #include "boolean_operations_enriched_polyhedron.hpp"
-#include "CPolyhedron_from_polygon_builder_3.hpp"
+#include "cpolyhedron_from_polygon_builder_3.hpp"
 //TODO-elo-restore  #include "Boolean_Operations_triangulation.h"
 
 #include <CGAL/boost/graph/copy_face_graph.h> // for copy_face_graph()
@@ -33,11 +33,9 @@ typedef typename EnrichedPolyhedron::Vertex_iterator Vertex_iterator;
 typedef typename EnrichedPolyhedron::Halfedge_handle Halfedge_handle;
 typedef typename EnrichedPolyhedron::Facet_handle    Facet_handle;
 typedef typename EnrichedPolyhedron::Facet_iterator  Facet_iterator;
-
-/*! \typedef HDS
- * \brief Halfedge data structure
- */
-//TODO-elo-rm  typedef Polyhedron::HalfedgeDS                HDS;
+typedef typename EnrichedPolyhedron::HalfedgeDS      HDS;
+typedef typename EnrichedPolyhedron::Halfedge_around_vertex_circulator
+    Halfedge_around_vertex_circulator;
 
 /*! \typedef AABB_Kernel
  * \brief Kernel used for the computations in a AABB-tree
@@ -1815,7 +1813,7 @@ private:
 
 
   /*! \brief The polyhedron builder*/
-  //TODO-elo-rm  CPolyhedron_from_polygon_builder_3<HDS> ppbuilder;
+  CPolyhedron_from_polygon_builder_3<HDS> ppbuilder;
 
   /*! \brief Lists the couples of facets that intersect*/
   std::map< FacetId, std::set< FacetId > > m_Couples;
