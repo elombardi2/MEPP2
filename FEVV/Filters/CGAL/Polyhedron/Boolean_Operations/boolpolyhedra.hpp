@@ -15,7 +15,7 @@
 #include "boolean_operations_properties.h"
 #include "boolean_operations_enriched_polyhedron.hpp"
 #include "cpolyhedron_from_polygon_builder_3.hpp"
-//TODO-elo-restore  #include "Boolean_Operations_triangulation.h"
+#include "boolean_operations_triangulation.hpp"
 
 #include <CGAL/boost/graph/copy_face_graph.h> // for copy_face_graph()
 
@@ -224,6 +224,13 @@ public:
     if(!m_Couples.empty())
     {
       ComputeIntersections();
+
+#if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
+      duration_ComputeIntersections = Timer.GetDiff();
+      Timer.Start();
+#endif // BOOLEAN_OPERATIONS_DEBUG
+
+      CutIntersectedFacets();
     //
     /////////////////////////////////////////////////
     //                                             //
@@ -239,13 +246,6 @@ public:
     //
     //
 #if 0 //TODO-elo-WIP
-
-#if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
-      duration_ComputeIntersections = Timer.GetDiff();
-      Timer.Start();
-#endif // BOOLEAN_OPERATIONS_DEBUG
-
-      CutIntersectedFacets();
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
       duration_CutIntersectedFacets = Timer.GetDiff();
@@ -527,7 +527,6 @@ private:
   }
 
   
-#if 0 //TODO-elo-rm
   /*! \brief Cuts the intersected facets and starts to build the result*/
   void CutIntersectedFacets()
   {
@@ -569,6 +568,8 @@ private:
     }
   }
   
+
+#if 0 //TODO-elo-rm
   /*! \brief Complete the building of the result*/
   void PropagateFacets()
   {
