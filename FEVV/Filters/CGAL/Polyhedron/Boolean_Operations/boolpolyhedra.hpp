@@ -28,6 +28,12 @@
 #include "Time_measure.h"
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
+
+typedef typename EnrichedPolyhedron::Vertex_iterator Vertex_iterator;
+typedef typename EnrichedPolyhedron::Halfedge_handle Halfedge_handle;
+typedef typename EnrichedPolyhedron::Facet_handle    Facet_handle;
+typedef typename EnrichedPolyhedron::Facet_iterator  Facet_iterator;
+
 /*! \typedef HDS
  * \brief Halfedge data structure
  */
@@ -42,13 +48,9 @@ typedef CGAL::Simple_cartesian<double>           AABB_Kernel;
 /*! \class Enriched_Triangle
  *  \brief An enriched triangle
  */
-template< typename HalfedgeGraph >
 class Enriched_Triangle : public AABB_Kernel::Triangle_3
 {
 public:
-  typedef boost::graph_traits< HalfedgeGraph >   GraphTraits;
-  typedef typename GraphTraits::face_descriptor  Facet_handle;
-
   /*! \typedef Point_3
    *  \brief 3d point
    */
@@ -101,43 +103,29 @@ private:
   Facet_handle f;
 };
 
+
+/*! \typedef Triangle
+ * \brief A triangle enriched with a facet handle*/
+typedef Enriched_Triangle Triangle;
+/*! \typedef AABB_Primitive
+ * \brief A primitive for an AABB-tree*/
+typedef CGAL::AABB_triangle_primitive< AABB_Kernel,
+                                       std::list< Triangle >::iterator >
+    AABB_Primitive;
+/*! \typedef AABB_Traits
+ * \brief concept for AABB-tree*/
+typedef CGAL::AABB_traits< AABB_Kernel, AABB_Primitive > AABB_Traits;
+/*! \typedef AABB_Tree
+ * \brief AABB-tree*/
+typedef CGAL::AABB_tree< AABB_Traits > AABB_Tree;
+
+
 /*! \class BoolPolyhedra
  * \brief The class that compute a Boolean operation*/
 template< typename HalfedgeGraph, typename PointMap >
 class BoolPolyhedra
 {
 private:
-#if 0 //TODO-elo-rm
-  typedef boost::graph_traits< HalfedgeGraph >      GraphTraits;
-  typedef typename GraphTraits::face_descriptor     Facet_handle;
-  typedef typename GraphTraits::halfedge_descriptor Halfedge_handle;
-  typedef typename HalfedgeGraph::Vertex_iterator   Vertex_iterator;
-  typedef typename HalfedgeGraph::Facet_iterator    Facet_iterator;
-#endif
-  typedef typename EnrichedPolyhedron::Vertex_iterator  Vertex_iterator;
-  typedef typename EnrichedPolyhedron::Halfedge_handle  Halfedge_handle;
-  typedef typename EnrichedPolyhedron::Facet_handle     Facet_handle;
-  typedef typename EnrichedPolyhedron::Facet_iterator   Facet_iterator;
-
-
-  /*! \typedef Triangle
-  * \brief A triangle enriched with a facet handle*/
-  using Triangle = Enriched_Triangle< HalfedgeGraph >;
-
-  /*! \typedef AABB_Primitive
-  * \brief A primitive for an AABB-tree*/
-  using TriangleListIterator = typename std::list< Triangle >::iterator;
-  using AABB_Primitive =
-      typename CGAL::AABB_triangle_primitive< AABB_Kernel,
-                                              TriangleListIterator >;
-  /*! \typedef AABB_Traits
-  * \brief concept for AABB-tree*/
-  typedef CGAL::AABB_traits< AABB_Kernel, AABB_Primitive > AABB_Traits;
-  /*! \typedef AABB_Tree
-  * \brief AABB-tree*/
-  typedef CGAL::AABB_tree< AABB_Traits > AABB_Tree;
-
-
   /*! \struct Triangle_Cut
    *  \brief A structure containing informations about an intersected facet
    */
@@ -222,6 +210,13 @@ public:
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
     Init(pMA, pMB);
+
+#if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
+    duration_Init = Timer.GetDiff();
+    Timer.Start();
+#endif // BOOLEAN_OPERATIONS_DEBUG
+
+    FindCouples();
     //
     /////////////////////////////////////////////////
     //                                             //
@@ -237,13 +232,6 @@ public:
     //
     //
 #if 0 //TODO-elo-WIP
-
-#if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
-    duration_Init = Timer.GetDiff();
-    Timer.Start();
-#endif // BOOLEAN_OPERATIONS_DEBUG
-
-    FindCouples();
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
     duration_FindCouples = Timer.GetDiff();
@@ -301,7 +289,7 @@ private:
     // convert input meshes to enriched Polyhedrons
     CGAL::copy_face_graph(*pMA, m_A);
     CGAL::copy_face_graph(*pMB, m_B);
-
+    
     // use pointers over meshes to keep Mepp1 code unchanged
     m_pA = &m_A;
     m_pB = &m_B;
@@ -415,165 +403,119 @@ private:
   }
 
 
-#if 0 //TODO-elo-WIP
   /*! \brief Finds every couple of facets between the two input polyhedra that intersects
    * \brief Each couple is stored in the member m_Couples*/
   void FindCouples()
-  {
-    //A AABB-tree is built on the facets of one of the polyhedra. A collision test is done with each facet of the other polyhedron.
-    Facet_iterator pFacet =  NULL;
-    std::list<typename AABB_Tree::Primitive_id> primitives;
-    std::list<Triangle> triangles;
+	{
+		//A AABB-tree is built on the facets of one of the polyhedra. A collision test is done with each facet of the other polyhedron.
+		Facet_iterator pFacet =	NULL;
+		std::list<AABB_Tree::Primitive_id> primitives;
+		std::list<Triangle> triangles;
 
-    HalfedgeId i = 0;
-    FacetId j = 0;
+		HalfedgeId i = 0;
+		FacetId j = 0;
 
-    //The AABB-tree is built on the polyhedron with the less number of facets
-    if(m_pA->size_of_facets() < m_pB->size_of_facets())
-    {
-      //Building the AABB-tree on the first polyhedron
-      for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
-        triangles.push_back(Triangle(pFacet));
-      tree.rebuild(triangles.begin(),triangles.end());
+		//The AABB-tree is built on the polyhedron with the less number of facets
+		if(m_pA->size_of_facets() < m_pB->size_of_facets())
+		{
+			//Building the AABB-tree on the first polyhedron
+			for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++) triangles.push_back(Triangle(pFacet));
+			tree.rebuild(triangles.begin(),triangles.end());
 
-      //collision test with each facet of the second polyhedron
-      for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
-      {
-        //"primitives" is the list of the triangles intersected (as a list of
-        //triangles)
-        tree.all_intersected_primitives(Triangle(pFacet),
-                                        std::back_inserter(primitives));
-        // TODO-elo-note: as far as I understand, primitives contains
-        //                all A faces that intersect pFacet B face
-        if(primitives.size() !=0)
-        {
-          // TODO-elo-note: push B face to m_Facet_Handle
-          m_Facet_Handle.push_back(pFacet);
-          //update of the tags (the facet and the three incidents halfedges
-          //TODO-elo-rm  pFacet->Label = j++;
-          put(m_face_Label_B, pFacet, j++);
-          //TODO-elo-rm  pFacet->facet_begin()->Label = i++;
-          put(m_halfedge_Label_B, pFacet->facet_begin(), i++);
-          //TODO-elo-rm  pFacet->facet_begin()->next()->Label = i++;
-          put(m_halfedge_Label_B, pFacet->facet_begin()->next(), i++);
-          //TODO-elo-rm  pFacet->facet_begin()->next()->next()->Label = i++;
-          put(m_halfedge_Label_B, pFacet->facet_begin()->next()->next(), i++);
-          // creation of a Triangle_Cut structure to store the informations
-          // about the intersections
-          m_Inter_tri.push_back(Triangle_Cut(
-              Compute_Normal_direction(pFacet->facet_begin()), false));
-          do
-          {
-            //TODO-elo-note: supposing primitives contains A mesh faces
-            //same operations for the intersected primitives (only one time)
-            //TODO-elo-rm  if(primitives.back()->facet()->Label == 0xFFFFFFFF)
-            if(get(m_face_Label_A, primitives.back()->facet()) == 0xFFFFFFFF)
-            {
-              //TODO-elo-note: push A face to m_Facet_Handle
-              m_Facet_Handle.push_back(primitives.back()->facet());
-              //TODO-elo-rm  primitives.back()->facet()->Label = j++;
-              put(m_face_Label_A, primitives.back()->facet(), j++);
-              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->Label = i++;
-              put(m_halfedge_Label_A, primitives.back()->facet()->facet_begin(), i++);
-              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->Label = i++;
-              put(m_halfedge_Label_A, primitives.back()->facet()->facet_begin()->next(), i++);
-              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->next()->Label = i++;
-              put(m_halfedge_Label_A, primitives.back()->facet()->facet_begin()->next()->next(), i++);
-              m_Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(primitives.back()->facet()->facet_begin()), true));
-            }
-            //store every couple of intersected facet
-            //TODO-elo-rm  m_Couples[primitives.back()->facet()->Label].insert(pFacet->Label);
-            m_Couples[get(m_face_Label_A, primitives.back()->facet())].insert(
-                get(m_face_Label_B, pFacet));
-            //TODO-elo-note: here m_Couples contains (label_A, label_B) couples
-            primitives.pop_back();
-          }
-          while(primitives.size() != 0);
-          //TODO-elo-note: primitives is empty here
-        }
-      }
-    }
-    else
-    {
-      //Building the AABB-tree on the second polyhedron
-      for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
-        triangles.push_back(Triangle(pFacet));
-      tree.rebuild(triangles.begin(),triangles.end());
+			//collision test with each facet of the second polyhedron
+			for (pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
+			{
+				//"primitives" is the list of the triangles intersected (as a list of triangles)
+				tree.all_intersected_primitives(Triangle(pFacet), std::back_inserter(primitives));
+				if(primitives.size() !=0)
+				{
+					m_Facet_Handle.push_back(pFacet);
+					//update of the tags (the facet and the three incidents halfedges
+					pFacet->Label = j++;
+					pFacet->facet_begin()->Label = i++;
+					pFacet->facet_begin()->next()->Label = i++;
+					pFacet->facet_begin()->next()->next()->Label = i++;
+					//creation of a Triangle_Cut structure to store the informations about the intersections
+					m_Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(pFacet->facet_begin()), false));
+					do {
+						//same operations for the intersected primitives (only one time)
+						if(primitives.back()->facet()->Label == 0xFFFFFFFF)
+						{
+							m_Facet_Handle.push_back(primitives.back()->facet());
+							primitives.back()->facet()->Label = j++;
+							primitives.back()->facet()->facet_begin()->Label = i++;
+							primitives.back()->facet()->facet_begin()->next()->Label = i++;
+							primitives.back()->facet()->facet_begin()->next()->next()->Label = i++;
+							m_Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(primitives.back()->facet()->facet_begin()), true));
+						}
+						//store every couple of intersected facet
+						m_Couples[primitives.back()->facet()->Label].insert(pFacet->Label);
+						primitives.pop_back();
+					}
+					while(primitives.size() != 0);
+				}
+			}
+		}
+		else
+		{
+			//Building the AABB-tree on the second polyhedron
+			for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++) triangles.push_back(Triangle(pFacet));
+			tree.rebuild(triangles.begin(),triangles.end());
 
-      //collision test with each facet of the first polyhedron
-      for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
-      {
-        //"primitives" is the list of the triangles intersected (as a list of triangles)
-        tree.all_intersected_primitives(Triangle(pFacet),
-                                        std::back_inserter(primitives));
-        // TODO-elo-note: as far as I understand, primitives contains
-        //                all B faces that intersect pFacet A face
-        if(primitives.size() !=0)
-        {
-          // TODO-elo-note: push A face to m_Facet_Handle
-          m_Facet_Handle.push_back(pFacet);
-          //update of the tags (the facet and the three incidents halfedges
-          //TODO-elo-rm  pFacet->Label = j++;
-          put(m_face_Label_A, pFacet, j++);
-          //TODO-elo-rm  pFacet->facet_begin()->Label = i++;
-          put(m_halfedge_Label_A, pFacet->facet_begin(), i++);
-          //TODO-elo-rm  pFacet->facet_begin()->next()->Label = i++;
-          put(m_halfedge_Label_A, pFacet->facet_begin()->next(), i++);
-          //TODO-elo-rm  pFacet->facet_begin()->next()->next()->Label = i++;
-          put(m_halfedge_Label_A, pFacet->facet_begin()->next()->next(), i++);
-          // creation of a Triangle_Cut structure to store the informations
-          // about the intersections
-          m_Inter_tri.push_back(Triangle_Cut(
-              Compute_Normal_direction(pFacet->facet_begin()), true));
-          do
-          {
-            //TODO-elo-note: supposing primitives contains B mesh faces
-            //same operations for the intersected primitives (only one time)
-            //TODO-elo-rm  if(primitives.back()->facet()->Label == 0xFFFFFFFF)
-            if(get(m_face_Label_B, primitives.back()->facet()) == 0xFFFFFFFF)
-            {
-              //TODO-elo-note: push B face to m_Facet_Handle
-              m_Facet_Handle.push_back(primitives.back()->facet());
-              //TODO-elo-rm  primitives.back()->facet()->Label = j++;
-              put(m_face_Label_B, primitives.back()->facet(), j++);
-              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->Label = i++;
-              put(m_halfedge_Label_B, primitives.back()->facet()->facet_begin(), i++);
-              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->Label = i++;
-              put(m_halfedge_Label_B, primitives.back()->facet()->facet_begin()->next(), i++);
-              //TODO-elo-rm  primitives.back()->facet()->facet_begin()->next()->next()->Label = i++;
-              put(m_halfedge_Label_B, primitives.back()->facet()->facet_begin()->next()->next(), i++);
-              m_Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(primitives.back()->facet()->facet_begin()), false));
-            }
-            //store every couple of intersected facet
-            //TODO-elo-rm  m_Couples[pFacet->Label].insert(primitives.back()->facet()->Label);
-            m_Couples[get(m_face_Label_A, pFacet)].insert(
-                get(m_face_Label_B, primitives.back()->facet()));
-            //TODO-elo-note: here m_Couples contains (label_A, label_B) couples
-            primitives.pop_back();
-          }
-          while(primitives.size() != 0);
-          //TODO-elo-note: primitives is empty here
-        }
-      }
-    }
+			//collision test with each facet of the first polyhedron
+			for (pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
+			{
+				//"primitives" is the list of the triangles intersected (as a list of triangles)
+				tree.all_intersected_primitives(Triangle(pFacet), std::back_inserter(primitives));
+				if(primitives.size() !=0)
+				{
+					m_Facet_Handle.push_back(pFacet);
+					//update of the tags (the facet and the three incidents halfedges
+					pFacet->Label = j++;
+					pFacet->facet_begin()->Label = i++;
+					pFacet->facet_begin()->next()->Label = i++;
+					pFacet->facet_begin()->next()->next()->Label = i++;
+					//creation of a Triangle_Cut structure to store the informations about the intersections
+					m_Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(pFacet->facet_begin()), true));
+					do {
+						//same operations for the intersected primitives (only one time)
+						if(primitives.back()->facet()->Label == 0xFFFFFFFF)
+						{
+							m_Facet_Handle.push_back(primitives.back()->facet());
+							primitives.back()->facet()->Label = j++;
+							primitives.back()->facet()->facet_begin()->Label = i++;
+							primitives.back()->facet()->facet_begin()->next()->Label = i++;
+							primitives.back()->facet()->facet_begin()->next()->next()->Label = i++;
+							m_Inter_tri.push_back(Triangle_Cut(Compute_Normal_direction(primitives.back()->facet()->facet_begin()), false));
+						}
+						//store every couple of intersected facet
+						m_Couples[pFacet->Label].insert(primitives.back()->facet()->Label);
+						primitives.pop_back();
+					}
+					while(primitives.size() != 0);
+				}
+			}
+		}
 
     { //TODO-elo-rm-dbg-display
       std::cout << "end of FindCouples(), mesh A, face Label property:" << std::endl;
       for(pFacet = m_pA->facets_begin(); pFacet != m_pA->facets_end(); pFacet++)
-          std::cout << get(m_face_Label_A, pFacet) << std::endl;
+          std::cout << pFacet->Label << std::endl;
       std::cout << "end of FindCouples(), mesh B, face Label property:" << std::endl;
       for(pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
-          std::cout << get(m_face_Label_B, pFacet) << std::endl;
+          std::cout << pFacet->Label << std::endl;
       std::cout << "end of FindCouples(), mesh A, halfedge Label property:" << std::endl;
-      typename HalfedgeGraph::Halfedge_iterator pHe;
+      EnrichedPolyhedron::Halfedge_iterator pHe;
       for(pHe = m_pA->halfedges_begin(); pHe != m_pA->halfedges_end(); pHe++)
-          std::cout << get(m_halfedge_Label_A, pHe) << std::endl;
+          std::cout << pHe->Label << std::endl;
       std::cout << "end of FindCouples(), mesh B, halfedge Label property:" << std::endl;
       for(pHe = m_pB->halfedges_begin(); pHe != m_pB->halfedges_end(); pHe++)
-          std::cout << get(m_halfedge_Label_B, pHe) << std::endl;
+          std::cout << pHe->Label << std::endl;
     }
   }
 
+
+#if 0 //TODO-elo-WIP
   /*! \brief Compute the intersections*/
   void ComputeIntersections()
   {
