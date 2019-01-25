@@ -17,7 +17,8 @@
 #include "cpolyhedron_from_polygon_builder_3.hpp"
 #include "boolean_operations_triangulation.hpp"
 
-#include <CGAL/boost/graph/copy_face_graph.h> // for copy_face_graph()
+#include <CGAL/boost/graph/copy_face_graph.h> // for CGAL::copy_face_graph()
+#include <CGAL/boost/graph/helpers.h> // for CGAL::clear()
 
 #include <boost/graph/graph_traits.hpp>
 #include "FEVV/Wrappings/Geometry_traits.h"
@@ -189,15 +190,17 @@ public:
    * \param pMB : The second polyhedron
    * \param pMout : The result polyhedron
    * \param BOOP : The Boolean operator. Must be UNION, INTER or MINUS*/
-  BoolPolyhedra(HalfedgeGraph *pMA, //TODO-elo-rename to mA
-                PointMap      *pmA,
-                HalfedgeGraph *pMB, //TODO-elo-rename to mB
-                PointMap      *pmB,
-                HalfedgeGraph *pMout,
-                PointMap      *pm_out,
+  BoolPolyhedra(HalfedgeGraph &_gA,
+                HalfedgeGraph &_gB,
+                HalfedgeGraph &_g_out,
                 Bool_Op BOOP)
       : m_BOOP(BOOP)
   {
+    // convert input meshes to enriched Polyhedrons
+    EnrichedPolyhedron gA;
+    EnrichedPolyhedron gB;
+    CGAL::copy_face_graph(_gA, gA);
+    CGAL::copy_face_graph(_gB, gB);
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
     std::ofstream ofstrMA("input_A_boolsum.off"); ofstrMA << *pMA;
@@ -208,7 +211,7 @@ public:
     Timer.Start();
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
-    Init(pMA, pMB);
+    Init(&gA, &gB);
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
     duration_Init = Timer.GetDiff();
@@ -239,28 +242,19 @@ public:
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
       PropagateFacets();
-    //
-    /////////////////////////////////////////////////
-    //                                             //
-    //        WIP       WIP   WIP   WIPWIP         //
-    //        WIP       WIP         WIP WIP        //
-    //        WIP       WIP   WIP   WIPWIP         //
-    //         WIP WIP WIP    WIP   WIP            //
-    //           WIP WIP      WIP   WIP            //
-    //                                             //
-    /////////////////////////////////////////////////
-    //
-    //
-    //
-    //
-#if 0 //TODO-elo-WIP
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
       duration_PropagateFacets = Timer.GetDiff();
       Timer.Start();
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
-      pMout->delegate(ppbuilder);
+      // build output mesh
+      EnrichedPolyhedron g_out;
+      g_out.delegate(ppbuilder);
+
+      // convert output mesh from enriched Polyhedrons
+      CGAL::clear(_g_out);
+      CGAL::copy_face_graph(g_out, _g_out);
 
 #if 0 //#ifdef BOOLEAN_OPERATIONS_DEBUG
       duration_delegate = Timer.GetDiff();
@@ -270,7 +264,6 @@ public:
       WriteData(pMout);
       ColorType();
 #endif // BOOLEAN_OPERATIONS_DEBUG
-#endif //TODO-elo-WIP
 
     }
   }
@@ -282,16 +275,12 @@ private:
   /*! \brief Initialisation of the tags, and triangulation of the two input polyhedra
    * \param pMA : The first polyhedron
    * \param pMB : The second polyhedron*/
-  void Init(HalfedgeGraph *pMA, //TODO-elo-rename to mA
-            HalfedgeGraph *pMB) //TODO-elo-rename to mB
+  void Init(EnrichedPolyhedron *pMA, //TODO-elo-rename to mA
+            EnrichedPolyhedron *pMB) //TODO-elo-rename to mB
   {
-    // convert input meshes to enriched Polyhedrons
-    CGAL::copy_face_graph(*pMA, m_A);
-    CGAL::copy_face_graph(*pMB, m_B);
-    
     // use pointers over meshes to keep Mepp1 code unchanged
-    m_pA = &m_A;
-    m_pB = &m_B;
+    m_pA = pMA;
+    m_pB = pMB;
 
     // triangulation of the two input polyhedra
     // this is necessary for the AABB-tree, and simplify the computation of the
@@ -1803,10 +1792,8 @@ private:
 
   /*! \brief The first input polyhedron*/
   EnrichedPolyhedron *m_pA; //TODO-elo-rm PolyhedronPtr m_pA;
-  EnrichedPolyhedron m_A;
   /*! \brief The second input polyhedron*/
   EnrichedPolyhedron *m_pB; //TODO-elo-rm PolyhedronPtr m_pB;
-  EnrichedPolyhedron m_B;
 
 
   /*! \brief The polyhedron builder*/

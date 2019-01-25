@@ -24,10 +24,10 @@ namespace Filters {
  *              H. Barki, F. Dupont, Rapport de recherche RR-LIRIS-2010-018,
  *              2010
  *
- * \param  g1      1st input mesh 
- * \param  pm1     point map of 1st mesh
- * \param  g2      2nd input mesh 
- * \param  pm2     point map of 2nd mesh
+ * \param  gA      1st input mesh 
+ * \param  pmA     point map of 1st mesh
+ * \param  gB      2nd input mesh 
+ * \param  pmB     point map of 2nd mesh
  * \param  g_out   output mesh 
  * \param  pm_out  point map of output mesh
  * \param  gt      the geometry traits to use
@@ -40,16 +40,16 @@ template< typename HalfedgeGraph,
           typename PointMap,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
-boolean_union(HalfedgeGraph &g1,
-              PointMap      &pm1, //TODO-elo-really-necessary?
-              HalfedgeGraph &g2,
-              PointMap      &pm2, //TODO-elo-really-necessary?,
+boolean_union(HalfedgeGraph &gA,
+              PointMap      &pmA, //TODO-elo-really-necessary?
+              HalfedgeGraph &gB,
+              PointMap      &pmB, //TODO-elo-really-necessary?,
               HalfedgeGraph &g_out,
               PointMap      &pm_out, //TODO-elo-really-necessary?
               const GeometryTraits &gt)
 {
   BoolPolyhedra< HalfedgeGraph, PointMap >(
-      &g1, &pm1, &g2, &pm2, &g_out, &pm_out, UNION);
+      gA, gB, g_out, UNION);
 }
 
 /**
@@ -62,10 +62,10 @@ boolean_union(HalfedgeGraph &g1,
  *
  *         Use the default geometry traits of the mesh.
  *
- * \param  g1      1st input mesh 
- * \param  pm1     point map of 1st mesh
- * \param  g2      2nd input mesh 
- * \param  pm2     point map of 2nd mesh
+ * \param  gA      1st input mesh 
+ * \param  pmA     point map of 1st mesh
+ * \param  gB      2nd input mesh 
+ * \param  pmB     point map of 2nd mesh
  * \param  g_out   output mesh 
  * \param  pm_out  point map of output mesh
  *
@@ -75,17 +75,17 @@ template< typename HalfedgeGraph,
           typename PointMap,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
-boolean_union(HalfedgeGraph &g1,
-              PointMap      &pm1,
-              HalfedgeGraph &g2,
-              PointMap      &pm2,
+boolean_union(HalfedgeGraph &gA,
+              PointMap      &pmA,
+              HalfedgeGraph &gB,
+              PointMap      &pmB,
               HalfedgeGraph &g_out,
               PointMap      &pm_out //TODO-elo-really-necessary?
               )
 {
-  GeometryTraits gt(g1);
+  GeometryTraits gt(gA);
   boolean_union< HalfedgeGraph, PointMap, GeometryTraits >(
-      g1, pm1, g2, pm2, g_out, pm_out, gt);
+      gA, pmA, gB, pmB, g_out, pm_out, gt);
 }
 
 
