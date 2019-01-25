@@ -41,11 +41,14 @@ template< typename HalfedgeGraph,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
 boolean_union(HalfedgeGraph &gA,
-              PointMap      &pmA, //TODO-elo-really-necessary?
+              PointMap      &pmA,
+                // for compliance with filter policy, not used
               HalfedgeGraph &gB,
-              PointMap      &pmB, //TODO-elo-really-necessary?,
+              PointMap      &pmB,
+                // for compliance with filter policy, not used
               HalfedgeGraph &g_out,
-              PointMap      &pm_out, //TODO-elo-really-necessary?
+              PointMap      &pm_out,
+                // for compliance with filter policy, not used
               const GeometryTraits &gt)
 {
   BoolPolyhedra< HalfedgeGraph, PointMap >(
