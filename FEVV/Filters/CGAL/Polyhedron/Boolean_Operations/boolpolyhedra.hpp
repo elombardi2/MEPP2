@@ -107,13 +107,17 @@ template< typename HalfedgeGraph, typename PointMap >
 class BoolPolyhedra
 {
 private:
+#if 0 //TODO-elo-rm
   typedef boost::graph_traits< HalfedgeGraph >      GraphTraits;
   typedef typename GraphTraits::face_descriptor     Facet_handle;
   typedef typename GraphTraits::halfedge_descriptor Halfedge_handle;
-  //TODO-elo-why-not-working?  typedef typename GraphTraits::vertex_iterator   Vertex_iterator;
   typedef typename HalfedgeGraph::Vertex_iterator   Vertex_iterator;
-  //TODO-elo-why-not-working?  typedef typename GraphTraits::face_iterator    Facet_iterator;
   typedef typename HalfedgeGraph::Facet_iterator    Facet_iterator;
+#endif
+  typedef typename EnrichedPolyhedron::Vertex_iterator  Vertex_iterator;
+  typedef typename EnrichedPolyhedron::Halfedge_handle  Halfedge_handle;
+  typedef typename EnrichedPolyhedron::Facet_handle     Facet_handle;
+  typedef typename EnrichedPolyhedron::Facet_iterator   Facet_iterator;
 
 
   /*! \typedef Triangle
@@ -217,7 +221,7 @@ public:
     Timer.Start();
 #endif // BOOLEAN_OPERATIONS_DEBUG
 
-    Init(pMA, pmA, pMB, pmB);
+    Init(pMA, pMB);
     //
     /////////////////////////////////////////////////
     //                                             //
@@ -292,9 +296,7 @@ private:
    * \param pMA : The first polyhedron
    * \param pMB : The second polyhedron*/
   void Init(HalfedgeGraph *pMA, //TODO-elo-rename to mA
-            PointMap      *pmA,
-            HalfedgeGraph *pMB, //TODO-elo-rename to mB
-            PointMap      *pmB)
+            HalfedgeGraph *pMB) //TODO-elo-rename to mB
   {
     // convert input meshes to enriched Polyhedrons
     CGAL::copy_face_graph(*pMA, m_A);
@@ -303,31 +305,6 @@ private:
     // use pointers over meshes to keep Mepp1 code unchanged
     m_pA = &m_A;
     m_pB = &m_B;
-
-#if 0 //TODO-elo-restore
-    // initialize property maps
-    m_vertex_Label_A =
-        FEVV::make_vertex_property_map< HalfedgeGraph, VertexId >(*m_pA);
-    m_vertex_Label_B =
-        FEVV::make_vertex_property_map< HalfedgeGraph, VertexId >(*m_pB);
-
-    m_halfedge_Label_A =
-        FEVV::make_halfedge_property_map< HalfedgeGraph, HalfedgeId >(*m_pA);
-    m_halfedge_Label_B =
-        FEVV::make_halfedge_property_map< HalfedgeGraph, HalfedgeId >(*m_pB);
-
-    m_face_Label_A =
-        FEVV::make_face_property_map< HalfedgeGraph, FacetId >(*m_pA);
-    m_face_Label_B =
-        FEVV::make_face_property_map< HalfedgeGraph, FacetId >(*m_pB);
-    m_face_IsExt_A =
-        FEVV::make_face_property_map< HalfedgeGraph, bool >(*m_pA);
-    m_face_IsExt_B =
-        FEVV::make_face_property_map< HalfedgeGraph, bool >(*m_pB);
-    m_face_IsOK_A =
-        FEVV::make_face_property_map< HalfedgeGraph, bool >(*m_pA);
-    m_face_IsOK_B =
-        FEVV::make_face_property_map< HalfedgeGraph, bool >(*m_pB);
 
     // triangulation of the two input polyhedra
     // this is necessary for the AABB-tree, and simplify the computation of the
@@ -342,65 +319,43 @@ private:
         pVertex != m_pA->vertices_end();
         ++pVertex)
     {
-      // TODO-elo-rm  pVertex->Label = 0xFFFFFFFF;
-      //TODO-elo-test-rm-beg
-      //int i = *pVertex;
-      //typename GraphTraits::vertex_descriptor vd;
-      //int j = vd;
-      //typename HalfedgeGraph::Vertex_handle vh;
-      //int k = vh;
-      //int l = pVertex;
-      //typename GraphTraits::vertex_iterator vi;
-      //int z = vi;
-      // -> vd = same type as vh and pVertex!!!
-      // -> vi = CGAL::Prevent_deref<GraphTraits::vertex_descriptor>
-      //TODO-elo-test-rm-end
-      put(m_vertex_Label_A, pVertex, 0xFFFFFFFF);
+      pVertex->Label = 0xFFFFFFFF;
     }
     for(Vertex_iterator pVertex = m_pB->vertices_begin();
         pVertex != m_pB->vertices_end();
         ++pVertex)
     {
-      // TODO-elo-rm  pVertex->Label = 0xFFFFFFFF;
-      put(m_vertex_Label_B, pVertex, 0xFFFFFFFF);
+      pVertex->Label = 0xFFFFFFFF;
     }
     for(Facet_iterator pFacet = m_pA->facets_begin();
         pFacet != m_pA->facets_end();
         ++pFacet)
     {
-      // TODO-elo-rm  pFacet->Label = 0xFFFFFFFF;
-      // TODO-elo-rm  pFacet->IsExt = false;
-      // TODO-elo-rm  pFacet->IsOK = false;
-      put(m_face_Label_A, pFacet, 0xFFFFFFFF);
-      put(m_face_IsExt_A, pFacet, false);
-      put(m_face_IsOK_A, pFacet, false);
+      pFacet->Label = 0xFFFFFFFF;
+      pFacet->IsExt = false;
+      pFacet->IsOK = false;
     }
     for(Facet_iterator pFacet = m_pB->facets_begin();
         pFacet != m_pB->facets_end();
         ++pFacet)
     {
-      //TODO-elo-rm  pFacet->Label = 0xFFFFFFFF;
-      //TODO-elo-rm  pFacet->IsExt = false;
-      //TODO-elo-rm  pFacet->IsOK = false;
-      put(m_face_Label_B, pFacet, 0xFFFFFFFF);
-      put(m_face_IsExt_B, pFacet, false);
-      put(m_face_IsOK_B, pFacet, false);
+      pFacet->Label = 0xFFFFFFFF;
+      pFacet->IsExt = false;
+      pFacet->IsOK = false;
     }
 
     { // TODO-elo-rm-dbg-display
       // init HE property maps to be able to compare
       // with Mepp1
-      typename HalfedgeGraph::Halfedge_iterator pHe;
+      EnrichedPolyhedron::Halfedge_iterator pHe;
       for(pHe = m_pA->halfedges_begin(); pHe != m_pA->halfedges_end(); pHe++)
-        put(m_halfedge_Label_A, pHe, 42424242);
+        pHe->Label = 42424242;
       for(pHe = m_pB->halfedges_begin(); pHe != m_pB->halfedges_end(); pHe++)
-        put(m_halfedge_Label_B, pHe, 42424242);
+        pHe->Label = 42424242;
     }
-#endif
   }
 
-#if 0 //TODO-elo-WIP
-  void triangulate(HalfedgeGraph *m) //TODO-elo-make-a-separate-filter?
+  void triangulate(EnrichedPolyhedron *m) //TODO-elo-make-a-separate-filter?
   {
     { //TODO-elo-dbg-rm
       std::cout << "Triangulating mesh..." << std::endl;
@@ -449,8 +404,8 @@ private:
 
     } while(true);
 
-    //TODO-elo-rm  this->compute_normals();
-    //TODO-elo-rm  this->compute_type();
+    //TODO-elo-rm-not-ported?  this->compute_normals();
+    //TODO-elo-rm-not-ported?  this->compute_type();
     { //TODO-elo-dbg-rm
       std::cout << "after triangulating mesh:" << std::endl;
       std::cout << "  size_of_vertices = " << m->size_of_vertices() << std::endl;
@@ -460,6 +415,7 @@ private:
   }
 
 
+#if 0 //TODO-elo-WIP
   /*! \brief Finds every couple of facets between the two input polyhedra that intersects
    * \brief Each couple is stored in the member m_Couples*/
   void FindCouples()

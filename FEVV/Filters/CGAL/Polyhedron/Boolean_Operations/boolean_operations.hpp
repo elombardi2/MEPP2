@@ -41,9 +41,9 @@ template< typename HalfedgeGraph,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
 boolean_union(HalfedgeGraph &g1,
-              PointMap      &pm1,
+              PointMap      &pm1, //TODO-elo-really-necessary?
               HalfedgeGraph &g2,
-              PointMap      &pm2,
+              PointMap      &pm2, //TODO-elo-really-necessary?,
               HalfedgeGraph &g_out,
               PointMap      &pm_out, //TODO-elo-really-necessary?
               const GeometryTraits &gt)
