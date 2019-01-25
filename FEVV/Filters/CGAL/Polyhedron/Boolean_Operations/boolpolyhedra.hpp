@@ -12,6 +12,7 @@
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/AABB_traits.h>
 #include "boolean_operations_definitions.hpp"
+#include "boolean_operations_properties.h"
 //TODO-elo-restore  #include "CPolyhedron_from_polygon_builder_3.h"
 //TODO-elo-restore  #include "Boolean_Operations_triangulation.h"
 
@@ -129,29 +130,6 @@ private:
   * \brief AABB-tree*/
   typedef CGAL::AABB_tree< AABB_Traits > AABB_Tree;
 
-  /*!
-  * \typedef VertexId
-  * \brief Vertex Id
-  */
-  typedef unsigned long              VertexId;
-
-  /*!
-  * \typedef HalfedgeId
-  * \brief Halfedge Id
-  */
-  typedef unsigned long              HalfedgeId;
-
-  /*!
-  * \typedef FacetId
-  * \brief Facet Id
-  */
-  typedef unsigned long              FacetId;
-
-  /*!
-  * \typedef InterId
-  * \brief Intersection Id
-  */
-  typedef unsigned long              InterId;
 
   /*! \struct Triangle_Cut
    *  \brief A structure containing informations about an intersected facet
