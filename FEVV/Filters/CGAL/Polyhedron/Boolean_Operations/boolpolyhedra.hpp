@@ -17,6 +17,8 @@
 //TODO-elo-restore  #include "CPolyhedron_from_polygon_builder_3.h"
 //TODO-elo-restore  #include "Boolean_Operations_triangulation.h"
 
+#include <CGAL/boost/graph/copy_face_graph.h> // for copy_face_graph()
+
 #include <boost/graph/graph_traits.hpp>
 #include "FEVV/Wrappings/Geometry_traits.h"
 #include "FEVV/Wrappings/properties.h"
@@ -294,12 +296,13 @@ private:
             HalfedgeGraph *pMB, //TODO-elo-rename to mB
             PointMap      *pmB)
   {
-    m_pA = pMA;
-    m_pmA = pmA;
-    m_pB = pMB;
-    m_pmB = pmB;
+    // convert input meshes to enriched Polyhedrons
+    CGAL::copy_face_graph(*pMA, m_A);
+    CGAL::copy_face_graph(*pMB, m_B);
 
-    EnrichedPolyhedron test;
+    // use pointers over meshes to keep Mepp1 code unchanged
+    m_pA = &m_A;
+    m_pB = &m_B;
 
 #if 0 //TODO-elo-restore
     // initialize property maps
@@ -1943,35 +1946,12 @@ private:
   Bool_Op m_BOOP;
 
   /*! \brief The first input polyhedron*/
-  HalfedgeGraph *m_pA; //TODO-elo-rm PolyhedronPtr m_pA;
-  PointMap *m_pmA;
+  EnrichedPolyhedron *m_pA; //TODO-elo-rm PolyhedronPtr m_pA;
+  EnrichedPolyhedron m_A;
   /*! \brief The second input polyhedron*/
-  HalfedgeGraph *m_pB; //TODO-elo-rm PolyhedronPtr m_pB;
-  PointMap *m_pmB;
+  EnrichedPolyhedron *m_pB; //TODO-elo-rm PolyhedronPtr m_pB;
+  EnrichedPolyhedron m_B;
 
-  /*! \brief  Property maps */
-  typename FEVV::Vertex_pmap< HalfedgeGraph, VertexId >
-      m_vertex_Label_A; // ELO replace pVertex->Label
-  typename FEVV::Vertex_pmap< HalfedgeGraph, VertexId >
-      m_vertex_Label_B; // ELO replace pVertex->Label
-
-  typename FEVV::Halfedge_pmap< HalfedgeGraph, HalfedgeId >
-      m_halfedge_Label_A; // ELO replace facet_begin()->Label
-  typename FEVV::Halfedge_pmap< HalfedgeGraph, HalfedgeId >
-      m_halfedge_Label_B; // ELO replace facet_begin()->Label
-
-  typename FEVV::Face_pmap< HalfedgeGraph, FacetId >
-      m_face_Label_A; // ELO replace pFacet->Label
-  typename FEVV::Face_pmap< HalfedgeGraph, FacetId >
-      m_face_Label_B; // ELO replace pFacet->Label
-  typename FEVV::Face_pmap< HalfedgeGraph, bool >
-      m_face_IsExt_A; // ELO replace pFacet->IsExt
-  typename FEVV::Face_pmap< HalfedgeGraph, bool >
-      m_face_IsExt_B; // ELO replace pFacet->IsExt
-  typename FEVV::Face_pmap< HalfedgeGraph, bool >
-      m_face_IsOK_A; // ELO replace pFacet->IsOK
-  typename FEVV::Face_pmap< HalfedgeGraph, bool >
-      m_face_IsOK_B; // ELO replace pFacet->IsOK
 
   /*! \brief The polyhedron builder*/
   //TODO-elo-rm  CPolyhedron_from_polygon_builder_3<HDS> ppbuilder;

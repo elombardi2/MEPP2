@@ -8,8 +8,8 @@
 #include "boolean_operations_properties.h"
 
 
-template <class Refs, class T, class P, class Norm>
-class EnrichedVertex : public CGAL::HalfedgeDS_vertex_base<Refs, T, P>
+template< class Refs, class T, class P >
+class EnrichedVertex : public CGAL::HalfedgeDS_vertex_base< Refs, T, P >
 {
 public:
   // life cycle
@@ -32,8 +32,9 @@ public:
 };
 
 
-template <class Refs, class Tprev, class Tvertex, class Tface, class Norm>
-class EnrichedHalfedge : public CGAL::HalfedgeDS_halfedge_base<Refs,Tprev,Tvertex,Tface>
+template< class Refs, class Tprev, class Tvertex, class Tface >
+class EnrichedHalfedge
+    : public CGAL::HalfedgeDS_halfedge_base< Refs, Tprev, Tvertex, Tface >
 {
 public:
   // life cycle
@@ -50,8 +51,8 @@ public:
 };
 
 
-template <class Refs, class T, class Norm>
-class EnrichedFacet : public CGAL::HalfedgeDS_face_base<Refs, T>
+template< class Refs, class T >
+class EnrichedFacet : public CGAL::HalfedgeDS_face_base< Refs, T >
 {
 public:
   // life cycle
@@ -80,7 +81,16 @@ struct EnrichedItems : public CGAL::Polyhedron_items_3
   {
     typedef typename Traits::Point_3 Point;
     typedef typename Traits::Vector_3 Normal;
-    typedef EnrichedVertex< Refs, CGAL::Tag_true, Point, Normal > Vertex;
+    typedef EnrichedVertex< Refs, CGAL::Tag_true, Point > Vertex;
+  };
+
+  // wrap halfedge
+  template< class Refs, class Traits >
+  struct Halfedge_wrapper
+  {
+    typedef typename Traits::Vector_3 Normal;
+    typedef EnrichedHalfedge< Refs, CGAL::Tag_true, CGAL::Tag_true, CGAL::Tag_true >
+        Halfedge;
   };
 
   // wrap face
@@ -90,20 +100,7 @@ struct EnrichedItems : public CGAL::Polyhedron_items_3
     typedef typename Traits::Point_3 Point;
     typedef typename Traits::Vector_3 Normal;
     typedef typename Traits::Plane_3 Plane;
-    typedef EnrichedFacet< Refs, CGAL::Tag_true, Point, Normal, Plane > Face;
-  };
-
-  // wrap halfedge
-  template< class Refs, class Traits >
-  struct Halfedge_wrapper
-  {
-    typedef typename Traits::Vector_3 Normal;
-    typedef EnrichedHalfedge< Refs,
-                              CGAL::Tag_true,
-                              CGAL::Tag_true,
-                              CGAL::Tag_true,
-                              Normal >
-        Halfedge;
+    typedef EnrichedFacet< Refs, CGAL::Tag_true > Face;
   };
 };
 
