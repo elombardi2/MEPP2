@@ -279,13 +279,13 @@ public:
    * \return The list of the triangles belonging to the result.
    * each triangle is defined by a list of three labels
    */
-        vector<vector<unsigned long> > get_triangles(bool inv_triangles, bool *IsExt)
+  std::vector< std::vector<unsigned long> > get_triangles(bool inv_triangles, bool *IsExt)
   {
     //init
     IsExt[0] = false;
     IsExt[1] = false;
     IsExt[2] = false;
-                vector<vector<unsigned long> > tris;
+    std::vector<std::vector<unsigned long> > tris;
     for(Face_iterator_tri fi = ct.faces_begin();fi != ct.faces_end();fi++)
       fi->set_OK(false);
 
@@ -331,7 +331,7 @@ public:
 
       if(f->get_Ext())
       {
-        vector<unsigned long> tri;
+        std::vector<unsigned long> tri;
         int i;
         tri.push_back(f->vertex(0)->get_Label());
 
@@ -371,12 +371,12 @@ public:
    * \return The list of the triangles belonging to the result.
    * each triangle is defined by a list of three labels
    */
-        vector<vector<unsigned long> > get_all_triangles(bool inv_triangles)
+  std::vector< std::vector<unsigned long> > get_all_triangles(bool inv_triangles)
   {
-                vector<vector<unsigned long> > tris;
+    std::vector< std::vector<unsigned long> > tris;
     for(Face_iterator_tri f = ct.faces_begin();f != ct.faces_end();f++)
     {
-      vector<unsigned long> tri;
+      std::vector<unsigned long> tri;
       tri.push_back(f->vertex(0)->get_Label());
       if(inv_triangles)
       {
@@ -397,9 +397,9 @@ private:
   /*! \brief The triangulation*/
   Constrained_Delaunay_tri ct;
   /*! \brief List of the id of the points added in the triangulation*/
-  vector<InterId> pts_point;
+  std::vector<InterId> pts_point;
   /*! \brief List of the handles of the points added in the triangulation*/
-  vector<Vertex_handle_tri> pts_vertex;
+  std::vector<Vertex_handle_tri> pts_vertex;
   /*! \brief Handle of the point corresponding to the first vertex of the facet*/
   Vertex_handle_tri v1;
   /*! \brief Handle of the point corresponding to the second vertex of the facet*/

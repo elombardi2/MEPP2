@@ -555,7 +555,7 @@ private:
         }
         //get the triangles of the triangulation thay belong to the result
         //and determine if the three neighboring facets belongs to the result (using IsExt[3])
-                                vector<vector<unsigned long> > Tri_set = T.get_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false, IsExt);
+        std::vector<std::vector<unsigned long> > Tri_set = T.get_triangles((m_BOOP == MINUS && !TriCut.Facet_from_A)?true:false, IsExt);
         //add these triangles to the result
         ppbuilder.add_triangle(Tri_set, he);
 
