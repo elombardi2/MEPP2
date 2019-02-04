@@ -97,7 +97,6 @@ Vector_exact Compute_Normal_direction(Halfedge_handle he)   // MT: suppression r
 }
 
 #ifdef BOOLEAN_OPERATIONS_DEBUG
-
 /**
  * \fn inline double tr(double &n)
  * \brief Truncate a number to 1/1000
