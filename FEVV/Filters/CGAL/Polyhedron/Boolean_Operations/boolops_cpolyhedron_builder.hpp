@@ -10,7 +10,7 @@
 //TODO-elo-rm  #include "../../../../mepp/Polyhedron/polyhedron.h"
 #include <CGAL/Polyhedron_incremental_builder_3.h>
 
-#include "boolean_operations_enriched_polyhedron.hpp"
+#include "boolops_enriched_polyhedron.hpp"
 
 
 typedef typename EnrichedPolyhedron::Halfedge_handle Halfedge_handle;

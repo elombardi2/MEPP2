@@ -11,7 +11,7 @@
 #include <CGAL/Gmpq.h>
 #include <CGAL/Lazy_exact_nt.h>
 
-#include "boolean_operations_enriched_polyhedron.hpp"
+#include "boolops_enriched_polyhedron.hpp"
 
 
 typedef typename EnrichedPolyhedron::Halfedge_handle Halfedge_handle;

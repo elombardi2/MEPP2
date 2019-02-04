@@ -10,7 +10,7 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #pragma once
 
-#include "FEVV/Filters/CGAL/Polyhedron/Boolean_Operations/boolpolyhedra.hpp"
+#include "boolops_polyhedra.hpp"
 
 namespace FEVV {
 namespace Filters {
@@ -24,11 +24,11 @@ namespace Filters {
  *              H. Barki, F. Dupont, Rapport de recherche RR-LIRIS-2010-018,
  *              2010
  *
- * \param  gA      1st input mesh 
+ * \param  gA      1st input mesh
  * \param  pmA     point map of 1st mesh
- * \param  gB      2nd input mesh 
+ * \param  gB      2nd input mesh
  * \param  pmB     point map of 2nd mesh
- * \param  g_out   output mesh 
+ * \param  g_out   output mesh
  * \param  pm_out  point map of output mesh
  * \param  gt      the geometry traits to use
  *
@@ -65,11 +65,11 @@ boolean_union(HalfedgeGraph &gA,
  *
  *         Use the default geometry traits of the mesh.
  *
- * \param  gA      1st input mesh 
+ * \param  gA      1st input mesh
  * \param  pmA     point map of 1st mesh
- * \param  gB      2nd input mesh 
+ * \param  gB      2nd input mesh
  * \param  pmB     point map of 2nd mesh
- * \param  g_out   output mesh 
+ * \param  g_out   output mesh
  * \param  pm_out  point map of output mesh
  *
  * \sa     the variant that use the geometry traits provided by the user.

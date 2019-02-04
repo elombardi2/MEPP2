@@ -11,11 +11,11 @@
 #include <CGAL/AABB_tree.h>
 #include <CGAL/AABB_triangle_primitive.h>
 #include <CGAL/AABB_traits.h>
-#include "boolean_operations_definitions.hpp"
-#include "boolean_operations_properties.h"
-#include "boolean_operations_enriched_polyhedron.hpp"
-#include "cpolyhedron_from_polygon_builder_3.hpp"
-#include "boolean_operations_triangulation.hpp"
+#include "boolops_definitions.hpp"
+#include "boolops_properties.h"
+#include "boolops_enriched_polyhedron.hpp"
+#include "boolops_cpolyhedron_builder.hpp"
+#include "boolops_triangulation.hpp"
 
 #include <CGAL/boost/graph/copy_face_graph.h> // for CGAL::copy_face_graph()
 #include <CGAL/boost/graph/helpers.h> // for CGAL::clear()
@@ -211,7 +211,7 @@ public:
       ofstrMB << gB;
     }
     //TODO-elo-rm  Time_measure Timer_total, Timer;
-    //TODO-elo-rm  
+    //TODO-elo-rm
     //TODO-elo-rm  Timer_total.Start();
     //TODO-elo-rm  Timer.Start();
     auto time_total_start = std::chrono::steady_clock::now();
@@ -551,7 +551,7 @@ private:
     }
   }
 
-  
+
   /*! \brief Cuts the intersected facets and starts to build the result*/
   void CutIntersectedFacets()
   {
@@ -592,7 +592,7 @@ private:
       }
     }
   }
-  
+
 
   /*! \brief Complete the building of the result*/
   void PropagateFacets()
@@ -605,7 +605,7 @@ private:
     {
       if(pFacet->IsOK) tmpTriangles.push(pFacet);
     }
-    
+
     //while the stack is not empty, we look the three neighboring facets
     //if these facets has not been validated (IsOK == false), the facet is validated and added to the stack
     //if this facet is taged as a part of the result (IsExt == true), the facet is added to the result
@@ -635,13 +635,13 @@ private:
         if(nf->IsExt) add_facet_to_solution(nf, true);
       }
     }
-    
+
     //same process for the second polyhedron
     for (pFacet = m_pB->facets_begin(); pFacet != m_pB->facets_end(); pFacet++)
     {
       if(pFacet->IsOK) tmpTriangles.push(pFacet);
     }
-    
+
     while(!tmpTriangles.empty())
     {
       f = tmpTriangles.top();
@@ -669,7 +669,7 @@ private:
       }
     }
   }
-  
+
 
   /*! \brief removes properly a couple from the list
    * \param A : Id of the first facet
@@ -680,7 +680,7 @@ private:
     if(m_Couples[A].count(B) != 0) m_Couples[A].erase(B);
     if(m_Couples[A].empty()) m_Couples.erase(A);
   }
-  
+
 
   /*! \brief Compute the intersection between two facets
    * \param A : Facet Id of the first facet (from the first polyhedron)
@@ -798,7 +798,7 @@ private:
           break;
         }
       }
-      //the intersection between fA2 and fB is the same so this couple is removed from the list 
+      //the intersection between fA2 and fB is the same so this couple is removed from the list
       rmCouple(fA2->Label, fB->Label);
     }
     //if an edge of the second triangle is on the plane
@@ -828,7 +828,7 @@ private:
           break;
         }
       }
-      //the intersection between fA and fB2 is the same so this couple is removed from the list 
+      //the intersection between fA and fB2 is the same so this couple is removed from the list
       rmCouple(fA->Label, fB2->Label);
     }
     //if an edge of each triangle is on the plane of the other
@@ -900,7 +900,7 @@ private:
           }
         }
       }
-      
+
       //secondly, we search the position of fA2
       //if fA2 is inside the poyhedron, "Intersection" is inverted
       if(posB_A2 * posB2_A2 > 0) //fB and fB2 on the same side
@@ -951,7 +951,7 @@ private:
       //if Intersection == false, fA and fA2 are both inside or outside the second polyhedron.
       if(!Intersection) stop = true;
 
-      //the intersection between (fA, fB2), (fA2, fB) and (fA2, fB2) are the same so these couples are removed from the list 
+      //the intersection between (fA, fB2), (fA2, fB) and (fA2, fB2) are the same so these couples are removed from the list
       rmCouple(fA->Label, fB2->Label);
       rmCouple(fA2->Label, fB->Label);
       rmCouple(fA2->Label, fB2->Label);
@@ -1042,7 +1042,7 @@ private:
     default:
       return;
     }
-  
+
     switch(posAbin)
     {
     //common intersections : one point one one side of the plane and the two other points on the other side
@@ -1114,7 +1114,7 @@ private:
     default:
       return;
     }
-    
+
     //if two distincts points belongs to the two triangles
     if(IsSegment(inter))
     {
@@ -1125,7 +1125,7 @@ private:
       std::vector<InterId> ptInterInv;
       ptInterInv.push_back(ptInter[1]);
       ptInterInv.push_back(ptInter[0]);
-      
+
       //the segments are stored in the concerned triangles, and oriented
       if(CGAL::cross_product(nA, nB) * (m_InterPts[ptInter[1]] - m_InterPts[ptInter[0]]) * ((invert_direction == true)?-1:1) > 0)
       {
@@ -1177,7 +1177,7 @@ private:
       }
     }
   }
-  
+
 
   /*! \brief Compute the intersection between a facet and a halfedge
    * \param inter : A pointer to an Info_Inter structure.*/
@@ -1246,7 +1246,7 @@ private:
     if(u+v == 1) inter->res += 4;  //intersection on he(2)
   }
 
-  
+
   /*! \brief Finds the position of a point in a 3d triangle
    * \param inter : A pointer to an Info_Inter structure*/
   void IsInTriangle(Info_Inter* inter)
@@ -1296,7 +1296,7 @@ private:
       return;
     }
 
-    //the point is in the triangle 
+    //the point is in the triangle
     inter->pt = p;
 
     //creation of the code for the location of the intersection
@@ -1305,7 +1305,7 @@ private:
     if(v == 0) inter->res += 2;  //intersection on he(1)
     if(w == 0) inter->res += 4;  //intersection on he(2)
   }
-  
+
 
   /*! \brief Verify that the intersection is a segment
    * \param inter : A pointer to four Info_Inter structures
@@ -1400,7 +1400,7 @@ private:
     }
     return false;
   }
-  
+
 
   /*! \brief Extracts the segment from a set of four intersection points and store these points in the list of intersecion points
    * \n There must be two valid and distinct points in the set
@@ -1443,7 +1443,7 @@ private:
     he = inter->he;
     InterId I;
 
-    //store the point to the list of the intersections and store its new Id 
+    //store the point to the list of the intersections and store its new Id
     inter->Id = m_InterPts.size();
     I = inter->Id;
     m_InterPts.push_back(inter->pt);
@@ -1731,8 +1731,8 @@ private:
     pFacet->facet_begin()->opposite()->facet()->IsExt = true;
     pFacet->facet_begin()->next()->opposite()->facet()->IsExt = true;
     pFacet->facet_begin()->next()->next()->opposite()->facet()->IsExt = true;
-  } 
-  
+  }
+
 #ifdef BOOLEAN_OPERATIONS_DEBUG
   /*! \brief Colors the facets of the input polyhedra
    * \n The intersected facets are red
@@ -1763,7 +1763,7 @@ private:
 #endif
   }
 
-  
+
   /*! \brief Writes a report containing the computation time of the diffrent parts of the algorithm
    * \param m_out : The result polyhedron*/
   void WriteData(const EnrichedPolyhedron &m_out)

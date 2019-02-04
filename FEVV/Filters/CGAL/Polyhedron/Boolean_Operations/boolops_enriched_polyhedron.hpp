@@ -5,7 +5,7 @@
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Polyhedron_items_3.h>
 
-#include "boolean_operations_properties.h"
+#include "boolops_properties.h"
 
 
 template< class Refs, class T, class P >
