@@ -15,7 +15,6 @@
 
 #include "FEVV/Filters/Generic/generic_reader.hpp"
 #include "FEVV/Filters/Generic/generic_writer.hpp"
-#include <CGAL/boost/graph/helpers.h>         // for CGAL::clear(mesh)
 
 #include "FEVV/Filters/CGAL/Polyhedron/Boolean_Operations/boolean_operations.hpp"
 
