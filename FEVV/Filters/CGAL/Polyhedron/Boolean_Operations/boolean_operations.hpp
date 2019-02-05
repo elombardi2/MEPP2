@@ -18,7 +18,6 @@ namespace Filters {
 //--------------------- UNION -------------------------
 
 /**
- * TODO-elo-fix-this-header
  * \brief  Computes the union of two polyhedra.
  *
  *         Ref: "Exact and Efficient Booleans for Polyhedra", C. Leconte,
@@ -36,7 +35,6 @@ namespace Filters {
  * \sa     the simplified variant that use the default geometry traits
  *         of the mesh.
  */
-//TODO-elo-note: here HalfedgeGraph mus be a Polyhedron_3!
 template< typename HalfedgeGraph,
           typename PointMap,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
@@ -57,7 +55,6 @@ boolean_union(HalfedgeGraph &gA,
 }
 
 /**
- * TODO-elo-fix-this-header
  * \brief  Computes the union of two polyhedra.
  *
  *         Ref: "Exact and Efficient Booleans for Polyhedra", C. Leconte,
@@ -81,10 +78,13 @@ template< typename HalfedgeGraph,
 void
 boolean_union(HalfedgeGraph &gA,
               PointMap      &pmA,
+                // for compliance with filter policy, not used
               HalfedgeGraph &gB,
               PointMap      &pmB,
+                // for compliance with filter policy, not used
               HalfedgeGraph &g_out,
-              PointMap      &pm_out //TODO-elo-really-necessary?
+              PointMap      &pm_out
+                // for compliance with filter policy, not used
               )
 {
   GeometryTraits gt(gA);
@@ -167,6 +167,84 @@ boolean_inter(HalfedgeGraph &gA,
 {
   GeometryTraits gt(gA);
   boolean_inter< HalfedgeGraph, PointMap, GeometryTraits >(
+      gA, pmA, gB, pmB, g_out, pm_out, gt);
+}
+
+
+//--------------------- SUBTRACTION -------------------------
+
+/**
+ * \brief  Computes the subtraction of two polyhedra.
+ *
+ *         Ref: "Exact and Efficient Booleans for Polyhedra", C. Leconte,
+ *              H. Barki, F. Dupont, Rapport de recherche RR-LIRIS-2010-018,
+ *              2010
+ *
+ * \param  gA      1st input mesh
+ * \param  pmA     point map of 1st mesh
+ * \param  gB      2nd input mesh
+ * \param  pmB     point map of 2nd mesh
+ * \param  g_out   output mesh
+ * \param  pm_out  point map of output mesh
+ * \param  gt      the geometry traits to use
+ *
+ * \sa     the simplified variant that use the default geometry traits
+ *         of the mesh.
+ */
+template< typename HalfedgeGraph,
+          typename PointMap,
+          typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
+void
+boolean_minus(HalfedgeGraph &gA,
+              PointMap      &pmA,
+                // for compliance with filter policy, not used
+              HalfedgeGraph &gB,
+              PointMap      &pmB,
+                // for compliance with filter policy, not used
+              HalfedgeGraph &g_out,
+              PointMap      &pm_out,
+                // for compliance with filter policy, not used
+              const GeometryTraits &gt)
+{
+  BoolPolyhedra< HalfedgeGraph, PointMap >(
+      gA, gB, g_out, MINUS);
+}
+
+/**
+ * \brief  Computes the subtraction of two polyhedra.
+ *
+ *         Ref: "Exact and Efficient Booleans for Polyhedra", C. Leconte,
+ *              H. Barki, F. Dupont, Rapport de recherche RR-LIRIS-2010-018,
+ *              2010
+ *
+ *         Use the default geometry traits of the mesh.
+ *
+ * \param  gA      1st input mesh
+ * \param  pmA     point map of 1st mesh
+ * \param  gB      2nd input mesh
+ * \param  pmB     point map of 2nd mesh
+ * \param  g_out   output mesh
+ * \param  pm_out  point map of output mesh
+ *
+ * \sa     the variant that use the geometry traits provided by the user.
+ */
+template< typename HalfedgeGraph,
+          typename PointMap,
+          typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
+void
+boolean_minus(HalfedgeGraph &gA,
+              PointMap      &pmA,
+                // for compliance with filter policy, not used
+              HalfedgeGraph &gB,
+              PointMap      &pmB,
+                // for compliance with filter policy, not used
+              HalfedgeGraph &g_out,
+              PointMap      &pm_out
+                // for compliance with filter policy, not used
+              )
+{
+  GeometryTraits gt(gA);
+  boolean_minus< HalfedgeGraph, PointMap, GeometryTraits >(
       gA, pmA, gB, pmB, g_out, pm_out, gt);
 }
 

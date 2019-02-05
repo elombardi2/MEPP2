@@ -95,10 +95,8 @@ int main(int argc, const char **argv)
     FEVV::Filters::boolean_union(m1, pm1, m2, pm2, m_out, pm_out);
   else if(operation == "inter")
     FEVV::Filters::boolean_inter(m1, pm1, m2, pm2, m_out, pm_out);
-#if 0
   else
     FEVV::Filters::boolean_minus(m1, pm1, m2, pm2, m_out, pm_out);
-#endif
 
   // write result to file
   FEVV::Filters::write_mesh(output_file, m_out, pmaps_bag_out);
@@ -106,7 +104,8 @@ int main(int argc, const char **argv)
   // compare output to reference
   if(reference_file.empty())
   {
-    std::cout << "No reference file provided, skipping result check.";
+    std::cout << "No reference file provided, skipping result check."
+              << std::endl;
   }
   else
   {
