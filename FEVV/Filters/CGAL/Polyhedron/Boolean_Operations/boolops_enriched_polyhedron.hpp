@@ -1,4 +1,14 @@
-//TODO-elo-licence
+// Copyright (c) 2012-2019 University of Lyon and CNRS (France).
+// All rights reserved.
+//
+// This file is part of MEPP2; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published 
+// by the Free Software Foundation; either version 3 of the License, 
+// or (at your option) any later version.
+//
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
 #pragma once
 
 #include <CGAL/Cartesian.h>
@@ -22,12 +32,6 @@ public:
   }
 
   // vertex properties
-
-  // subdivision:
-  /*! \brief true if the vertex has been created*/
-  //TODO-elo-rm-not-used?  bool Isnew;
-  // boolean operations:
-  /*! \brief An Id for the vertex*/
   VertexId Label;
 };
 
@@ -41,12 +45,6 @@ public:
   EnrichedHalfedge() {}
 
   // halfedge properties
-
-  // subdivision:
-  /*! \brief true if the halfedge has been created or subdivided*/
-  //TODO-elo-rm-not-used?  bool Isnew;
-  // boolean operations:
-  /*! \brief An Id for the halfedge*/
   HalfedgeId Label;
 };
 
@@ -59,11 +57,6 @@ public:
   EnrichedFacet() {}
 
   // face properties
-
-  // subdivision:
-  /*! \brief true if the facet has been subdivided*/
-  //TODO-elo-rm-not-used?  bool Issub;
-  // operations booleennes :
   /*! \brief true if the facet belongs to the result*/
   bool IsExt;
   /*! \brief true if the facet has been processed*/
@@ -104,13 +97,6 @@ struct EnrichedItems : public CGAL::Polyhedron_items_3
   };
 };
 
-
-#if 0 //TODO-elo-rm-section
-using CGALKernel = CGAL::Cartesian< double >;
-using MeshPolyhedron =
-    CGAL::Polyhedron_3< CGALKernel, CGAL::Polyhedron_items_with_id_3 >;
-typedef Enriched_polyhedron<Enriched_kernel, Enriched_items>	Polyhedron;
-#endif
 
 using CGALKernel = CGAL::Cartesian< double >;
 using EnrichedPolyhedron =
