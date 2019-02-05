@@ -15,6 +15,7 @@
 namespace FEVV {
 namespace Filters {
 
+//--------------------- UNION -------------------------
 
 /**
  * TODO-elo-fix-this-header
@@ -88,6 +89,84 @@ boolean_union(HalfedgeGraph &gA,
 {
   GeometryTraits gt(gA);
   boolean_union< HalfedgeGraph, PointMap, GeometryTraits >(
+      gA, pmA, gB, pmB, g_out, pm_out, gt);
+}
+
+
+//--------------------- INTERSECTION -------------------------
+
+/**
+ * \brief  Computes the intersection of two polyhedra.
+ *
+ *         Ref: "Exact and Efficient Booleans for Polyhedra", C. Leconte,
+ *              H. Barki, F. Dupont, Rapport de recherche RR-LIRIS-2010-018,
+ *              2010
+ *
+ * \param  gA      1st input mesh
+ * \param  pmA     point map of 1st mesh
+ * \param  gB      2nd input mesh
+ * \param  pmB     point map of 2nd mesh
+ * \param  g_out   output mesh
+ * \param  pm_out  point map of output mesh
+ * \param  gt      the geometry traits to use
+ *
+ * \sa     the simplified variant that use the default geometry traits
+ *         of the mesh.
+ */
+template< typename HalfedgeGraph,
+          typename PointMap,
+          typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
+void
+boolean_inter(HalfedgeGraph &gA,
+              PointMap      &pmA,
+                // for compliance with filter policy, not used
+              HalfedgeGraph &gB,
+              PointMap      &pmB,
+                // for compliance with filter policy, not used
+              HalfedgeGraph &g_out,
+              PointMap      &pm_out,
+                // for compliance with filter policy, not used
+              const GeometryTraits &gt)
+{
+  BoolPolyhedra< HalfedgeGraph, PointMap >(
+      gA, gB, g_out, INTER);
+}
+
+/**
+ * \brief  Computes the intersection of two polyhedra.
+ *
+ *         Ref: "Exact and Efficient Booleans for Polyhedra", C. Leconte,
+ *              H. Barki, F. Dupont, Rapport de recherche RR-LIRIS-2010-018,
+ *              2010
+ *
+ *         Use the default geometry traits of the mesh.
+ *
+ * \param  gA      1st input mesh
+ * \param  pmA     point map of 1st mesh
+ * \param  gB      2nd input mesh
+ * \param  pmB     point map of 2nd mesh
+ * \param  g_out   output mesh
+ * \param  pm_out  point map of output mesh
+ *
+ * \sa     the variant that use the geometry traits provided by the user.
+ */
+template< typename HalfedgeGraph,
+          typename PointMap,
+          typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
+void
+boolean_inter(HalfedgeGraph &gA,
+              PointMap      &pmA,
+                // for compliance with filter policy, not used
+              HalfedgeGraph &gB,
+              PointMap      &pmB,
+                // for compliance with filter policy, not used
+              HalfedgeGraph &g_out,
+              PointMap      &pm_out
+                // for compliance with filter policy, not used
+              )
+{
+  GeometryTraits gt(gA);
+  boolean_inter< HalfedgeGraph, PointMap, GeometryTraits >(
       gA, pmA, gB, pmB, g_out, pm_out, gt);
 }
 

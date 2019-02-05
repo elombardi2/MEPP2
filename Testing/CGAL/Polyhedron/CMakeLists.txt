@@ -605,7 +605,7 @@ add_test( Test_boolean_operations_polyhedron_inter
           "inter"
           "${TESTING_DATA_DIR}/CubeTriangleFaces.off"
           "${TESTING_DATA_DIR}/tetra.off"
-          "${TESTING_DATA_DIR}/boolean_operations/mepp1_cube_tetra_union.off"
+          "${TESTING_DATA_DIR}/boolean_operations/mepp1_cube_tetra_inter.off"
           )
 # test SUBTRACTION
 add_test( Test_boolean_operations_polyhedron_minus
@@ -613,5 +613,5 @@ add_test( Test_boolean_operations_polyhedron_minus
           "minus"
           "${TESTING_DATA_DIR}/CubeTriangleFaces.off"
           "${TESTING_DATA_DIR}/tetra.off"
-          "${TESTING_DATA_DIR}/boolean_operations/mepp1_cube_tetra_union.off"
+          "${TESTING_DATA_DIR}/boolean_operations/mepp1_cube_tetra_minus.off"
           )
