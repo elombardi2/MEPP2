@@ -71,7 +71,7 @@ typedef CGAL::Point_3<Exact_Kernel>    Point3d_exact;
  * \param p : The Point3d
  * \return The conversion in Point3d_exact.
  */
-Point3d_exact point_to_exact(Point3d &p)
+inline Point3d_exact point_to_exact(Point3d &p)
 {
   return Point3d_exact(p.x(),p.y(),p.z());
 }
@@ -83,7 +83,7 @@ Point3d_exact point_to_exact(Point3d &p)
  * \param pe : The Point3d_exact
  * \return The conversion in Point3d (double).
  */
-Point3d point_to_double(Point3d_exact &pe)
+inline Point3d point_to_double(Point3d_exact &pe)
 {
   return Point3d(to_double(pe.x()),to_double(pe.y()),to_double(pe.z()));
 }
@@ -95,7 +95,7 @@ Point3d point_to_double(Point3d_exact &pe)
  * \param he : A Halfedge incident to the facet
  * \return The normal direction (exact).
  */
-Vector_exact Compute_Normal_direction(Halfedge_handle he)   // MT: suppression référence
+inline Vector_exact Compute_Normal_direction(Halfedge_handle he)   // MT: suppression référence
 {
   return CGAL::cross_product(
       point_to_exact(he->next()->vertex()->point()) -
