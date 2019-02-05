@@ -19,91 +19,114 @@
 
 #include "FEVV/Filters/CGAL/Polyhedron/Boolean_Operations/boolean_operations.hpp"
 
+#include "Testing/Utils/utils_are_meshes_identical.hpp"
+
+
+int usage_and_exit(const char **argv)
+{
+  std::cout << "Apply boolean union, intersection or subtraction"
+               " on two meshes."
+            << std::endl;
+  std::cout << "Usage:  "
+            << argv[0]
+            << "  union|inter|minus  mesh_file_1  mesh_file_2"
+               "  [reference_mesh_file]"
+            << std::endl;
+  std::cout << "Example:  "
+            << argv[0]
+            << "  union"
+               "  ../Testing/Data/CubeTriangleFaces.off"
+               "  ../Testing/Data/tetra.off"
+               "  ../Testing/Data/boolean_operations/mepp1_cube_tetra_union.off"
+            << std::endl;
+
+  return EXIT_FAILURE;
+}
+
+
 int main(int argc, const char **argv)
 {
-  if(argc != 3)
-  {
-    std::cout << "Apply boolean union, intersection and subtraction"
-                 " on two meshes."
-              << std::endl;
-    std::cout << "Usage:  " << argv[0] << "  mesh_file_1  mesh_file_2"
-              << std::endl;
-    std::cout << "Example:  " << argv[0]
-              << "  ../Testing/Data/CubeNonTriangleFaces.off  "
-                 "../Testing/Data/tetra.off"
-              << std::endl;
-    return EXIT_FAILURE;
-  }
+  // check arguments
+  if(argc < 4  ||  argc > 5)
+    return usage_and_exit(argv);
+
+  // check operation
+  std::string operation = argv[1];
+  if(operation != "union" && operation != "inter" && operation != "minus")
+    return usage_and_exit(argv);
 
   // input and output files
-  std::string input_file_path_1 = argv[1];
-  std::string input_file_path_2 = argv[2];
-  std::string output_file_union_path =
-      "test_boolean_operations_polyhedron.union.off";
-  std::string output_file_inter_path =
-      "test_boolean_operations_polyhedron.inter.off";
-  std::string output_file_minus_path =
-      "test_boolean_operations_polyhedron.minus.off";
+  std::string input_file_1 = argv[2];
+  std::string input_file_2 = argv[3];
+  std::string reference_file;
+  if(argc == 5)
+    reference_file = argv[4];
+  std::string output_file =
+      "test_boolean_operations_polyhedron_" + operation + ".off";
 
-  // read meshes from files
+  // display parameters summary
+  std::cout << "\nParameters summary:" << std::endl;
+  std::cout << " - operation     : " << operation << std::endl;
+  std::cout << " - input file 1  : " << input_file_1 << std::endl;
+  std::cout << " - input file 2  : " << input_file_2 << std::endl;
+  std::cout << " - reference file: " << reference_file << std::endl;
+  std::cout << "\nOutput in " << output_file << std::endl;
+
+  // read input meshes from files
   FEVV::MeshPolyhedron m1;
   FEVV::PMapsContainer pmaps_bag_1;
-  FEVV::Filters::read_mesh(input_file_path_1, m1, pmaps_bag_1);
+  FEVV::Filters::read_mesh(input_file_1, m1, pmaps_bag_1);
   FEVV::MeshPolyhedron m2;
   FEVV::PMapsContainer pmaps_bag_2;
-  FEVV::Filters::read_mesh(input_file_path_2, m2, pmaps_bag_2);
+  FEVV::Filters::read_mesh(input_file_2, m2, pmaps_bag_2);
 
   // retrieve point maps
   auto pm1 = get(boost::vertex_point, m1);
   auto pm2 = get(boost::vertex_point, m2);
 
-  // apply union filter
-  {
-    // create output mesh
-    FEVV::MeshPolyhedron m_out;
-    auto pm_out = get(boost::vertex_point, m_out);
-    FEVV::PMapsContainer pmaps_bag_out;
+  // create output mesh
+  FEVV::MeshPolyhedron m_out;
+  auto pm_out = get(boost::vertex_point, m_out);
+  FEVV::PMapsContainer pmaps_bag_out;
 
-    // apply union filter, result in m_out
+  // apply filter, result in m_out
+  std::cout << "Running boolean operation" + operation + "..." << std::endl;
+  if(operation == "union")
     FEVV::Filters::boolean_union(m1, pm1, m2, pm2, m_out, pm_out);
+#if 0
+  else if(operation == "inter")
+    FEVV::Filters::boolean_inter(m1, pm1, m2, pm2, m_out, pm_out);
+  else
+    FEVV::Filters::boolean_minus(m1, pm1, m2, pm2, m_out, pm_out);
+#endif
 
-    // write result to file
-    FEVV::Filters::write_mesh(output_file_union_path, m_out, pmaps_bag_out);
-    { //TODO-elo-dbg-rm
-      FEVV::Filters::write_mesh("mesh1.off", m1, pmaps_bag_1);
-      FEVV::Filters::write_mesh("mesh2.off", m2, pmaps_bag_2);
+  // write result to file
+  FEVV::Filters::write_mesh(output_file, m_out, pmaps_bag_out);
+
+  // compare output to reference
+  if(reference_file.empty())
+  {
+    std::cout << "No reference file provided, skipping result check.";
+  }
+  else
+  {
+    std::cout << "Checking result with reference file..." << std::endl;
+    bool is_result_ok = are_meshes_equal(reference_file,
+                                         output_file,
+                                         false, /*verbose*/
+                                         1e-5,
+                                         true); /*relative error*/
+    if(is_result_ok)
+    {
+      std::cout << "Boolean operation " + operation + " successfully tested."
+                << std::endl;
+    }
+    else
+    {
+      std::cout << "Boolean operation " + operation + " FAILED!" << std::endl;
+      return EXIT_FAILURE;
     }
   }
-
-#if 0
-  // apply intersection filter
-  {
-    // create output mesh
-    FEVV::MeshPolyhedron m_out;
-    auto pm_out = get(boost::vertex_point, m_out);
-    FEVV::PMapsContainer pmaps_bag_out;
-
-    // apply intersection filter, result in m_out
-    FEVV::Filters::boolean_inter(m1, pm1, m2, pm2, m_out, pm_out);
-
-    // write result to file
-    FEVV::Filters::write_mesh(output_file_inter_path, m_out, pmaps_bag_out);
-  }
-
-  // apply subtraction filter
-  {
-    // create output mesh
-    FEVV::MeshPolyhedron m_out;
-    auto pm_out = get(boost::vertex_point, m_out);
-    FEVV::PMapsContainer pmaps_bag_out;
-
-    // apply subtraction filter, result in m_out
-    FEVV::Filters::boolean_minus(m1, pm1, m2, pm2, m_out, pm_out);
-
-    // write result to file
-    FEVV::Filters::write_mesh(output_file_minus_path, m_out, pmaps_bag_out);
-  }
-#endif
 
   return 0;
 }
