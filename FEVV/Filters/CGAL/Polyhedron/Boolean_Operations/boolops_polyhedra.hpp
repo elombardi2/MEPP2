@@ -123,7 +123,7 @@ typedef CGAL::AABB_tree< AABB_Traits > AABB_Tree;
 
 /*! \class BoolPolyhedra
  * \brief The class that compute a Boolean operation*/
-template< typename HalfedgeGraph, typename PointMap >
+template< typename HalfedgeGraph >
 class BoolPolyhedra
 {
 private:

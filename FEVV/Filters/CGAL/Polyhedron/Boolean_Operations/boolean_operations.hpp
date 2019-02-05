@@ -25,33 +25,29 @@ namespace Filters {
  *              2010
  *
  * \param  gA      1st input mesh
- * \param  pmA     point map of 1st mesh
  * \param  gB      2nd input mesh
- * \param  pmB     point map of 2nd mesh
  * \param  g_out   output mesh
- * \param  pm_out  point map of output mesh
  * \param  gt      the geometry traits to use
  *
  * \sa     the simplified variant that use the default geometry traits
  *         of the mesh.
+ * 
+ * \note   For compliance with the general project policy, the point maps
+ *         of the input and output meshes should be passed as parameters.
+ *         But the specific implementation of this filter can not use these
+ *         property maps directly. In order to avoid passing unused 
+ *         parameters, which later triggers compilation warning, it is 
+ *         decided to derogate to the general project policy.
  */
 template< typename HalfedgeGraph,
-          typename PointMap,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
 boolean_union(HalfedgeGraph &gA,
-              PointMap      &pmA,
-                // for compliance with filter policy, not used
               HalfedgeGraph &gB,
-              PointMap      &pmB,
-                // for compliance with filter policy, not used
               HalfedgeGraph &g_out,
-              PointMap      &pm_out,
-                // for compliance with filter policy, not used
               const GeometryTraits &gt)
 {
-  BoolPolyhedra< HalfedgeGraph, PointMap >(
-      gA, gB, g_out, UNION);
+  BoolPolyhedra< HalfedgeGraph >(gA, gB, g_out, UNION);
 }
 
 /**
@@ -64,32 +60,27 @@ boolean_union(HalfedgeGraph &gA,
  *         Use the default geometry traits of the mesh.
  *
  * \param  gA      1st input mesh
- * \param  pmA     point map of 1st mesh
  * \param  gB      2nd input mesh
- * \param  pmB     point map of 2nd mesh
  * \param  g_out   output mesh
- * \param  pm_out  point map of output mesh
  *
  * \sa     the variant that use the geometry traits provided by the user.
+ * 
+ * \note   For compliance with the general project policy, the point maps
+ *         of the input and output meshes should be passed as parameters.
+ *         But the specific implementation of this filter can not use these
+ *         property maps directly. In order to avoid passing unused 
+ *         parameters, which later triggers compilation warning, it is 
+ *         decided to derogate to the general project policy.
  */
 template< typename HalfedgeGraph,
-          typename PointMap,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
 boolean_union(HalfedgeGraph &gA,
-              PointMap      &pmA,
-                // for compliance with filter policy, not used
               HalfedgeGraph &gB,
-              PointMap      &pmB,
-                // for compliance with filter policy, not used
-              HalfedgeGraph &g_out,
-              PointMap      &pm_out
-                // for compliance with filter policy, not used
-              )
+              HalfedgeGraph &g_out)
 {
   GeometryTraits gt(gA);
-  boolean_union< HalfedgeGraph, PointMap, GeometryTraits >(
-      gA, pmA, gB, pmB, g_out, pm_out, gt);
+  boolean_union< HalfedgeGraph, GeometryTraits >(gA, gB, g_out, gt);
 }
 
 
@@ -103,33 +94,29 @@ boolean_union(HalfedgeGraph &gA,
  *              2010
  *
  * \param  gA      1st input mesh
- * \param  pmA     point map of 1st mesh
  * \param  gB      2nd input mesh
- * \param  pmB     point map of 2nd mesh
  * \param  g_out   output mesh
- * \param  pm_out  point map of output mesh
  * \param  gt      the geometry traits to use
  *
  * \sa     the simplified variant that use the default geometry traits
  *         of the mesh.
+ * 
+ * \note   For compliance with the general project policy, the point maps
+ *         of the input and output meshes should be passed as parameters.
+ *         But the specific implementation of this filter can not use these
+ *         property maps directly. In order to avoid passing unused 
+ *         parameters, which later triggers compilation warning, it is 
+ *         decided to derogate to the general project policy.
  */
 template< typename HalfedgeGraph,
-          typename PointMap,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
 boolean_inter(HalfedgeGraph &gA,
-              PointMap      &pmA,
-                // for compliance with filter policy, not used
               HalfedgeGraph &gB,
-              PointMap      &pmB,
-                // for compliance with filter policy, not used
               HalfedgeGraph &g_out,
-              PointMap      &pm_out,
-                // for compliance with filter policy, not used
               const GeometryTraits &gt)
 {
-  BoolPolyhedra< HalfedgeGraph, PointMap >(
-      gA, gB, g_out, INTER);
+  BoolPolyhedra< HalfedgeGraph >(gA, gB, g_out, INTER);
 }
 
 /**
@@ -142,32 +129,27 @@ boolean_inter(HalfedgeGraph &gA,
  *         Use the default geometry traits of the mesh.
  *
  * \param  gA      1st input mesh
- * \param  pmA     point map of 1st mesh
  * \param  gB      2nd input mesh
- * \param  pmB     point map of 2nd mesh
  * \param  g_out   output mesh
- * \param  pm_out  point map of output mesh
  *
  * \sa     the variant that use the geometry traits provided by the user.
+ * 
+ * \note   For compliance with the general project policy, the point maps
+ *         of the input and output meshes should be passed as parameters.
+ *         But the specific implementation of this filter can not use these
+ *         property maps directly. In order to avoid passing unused 
+ *         parameters, which later triggers compilation warning, it is 
+ *         decided to derogate to the general project policy.
  */
 template< typename HalfedgeGraph,
-          typename PointMap,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
 boolean_inter(HalfedgeGraph &gA,
-              PointMap      &pmA,
-                // for compliance with filter policy, not used
               HalfedgeGraph &gB,
-              PointMap      &pmB,
-                // for compliance with filter policy, not used
-              HalfedgeGraph &g_out,
-              PointMap      &pm_out
-                // for compliance with filter policy, not used
-              )
+              HalfedgeGraph &g_out)
 {
   GeometryTraits gt(gA);
-  boolean_inter< HalfedgeGraph, PointMap, GeometryTraits >(
-      gA, pmA, gB, pmB, g_out, pm_out, gt);
+  boolean_inter< HalfedgeGraph, GeometryTraits >(gA, gB, g_out, gt);
 }
 
 
@@ -181,33 +163,29 @@ boolean_inter(HalfedgeGraph &gA,
  *              2010
  *
  * \param  gA      1st input mesh
- * \param  pmA     point map of 1st mesh
  * \param  gB      2nd input mesh
- * \param  pmB     point map of 2nd mesh
  * \param  g_out   output mesh
- * \param  pm_out  point map of output mesh
  * \param  gt      the geometry traits to use
  *
  * \sa     the simplified variant that use the default geometry traits
  *         of the mesh.
+ * 
+ * \note   For compliance with the general project policy, the point maps
+ *         of the input and output meshes should be passed as parameters.
+ *         But the specific implementation of this filter can not use these
+ *         property maps directly. In order to avoid passing unused 
+ *         parameters, which later triggers compilation warning, it is 
+ *         decided to derogate to the general project policy.
  */
 template< typename HalfedgeGraph,
-          typename PointMap,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
 boolean_minus(HalfedgeGraph &gA,
-              PointMap      &pmA,
-                // for compliance with filter policy, not used
               HalfedgeGraph &gB,
-              PointMap      &pmB,
-                // for compliance with filter policy, not used
               HalfedgeGraph &g_out,
-              PointMap      &pm_out,
-                // for compliance with filter policy, not used
               const GeometryTraits &gt)
 {
-  BoolPolyhedra< HalfedgeGraph, PointMap >(
-      gA, gB, g_out, MINUS);
+  BoolPolyhedra< HalfedgeGraph >(gA, gB, g_out, MINUS);
 }
 
 /**
@@ -220,32 +198,27 @@ boolean_minus(HalfedgeGraph &gA,
  *         Use the default geometry traits of the mesh.
  *
  * \param  gA      1st input mesh
- * \param  pmA     point map of 1st mesh
  * \param  gB      2nd input mesh
- * \param  pmB     point map of 2nd mesh
  * \param  g_out   output mesh
- * \param  pm_out  point map of output mesh
  *
  * \sa     the variant that use the geometry traits provided by the user.
+ * 
+ * \note   For compliance with the general project policy, the point maps
+ *         of the input and output meshes should be passed as parameters.
+ *         But the specific implementation of this filter can not use these
+ *         property maps directly. In order to avoid passing unused 
+ *         parameters, which later triggers compilation warning, it is 
+ *         decided to derogate to the general project policy.
  */
 template< typename HalfedgeGraph,
-          typename PointMap,
           typename GeometryTraits = FEVV::Geometry_traits< HalfedgeGraph > >
 void
 boolean_minus(HalfedgeGraph &gA,
-              PointMap      &pmA,
-                // for compliance with filter policy, not used
               HalfedgeGraph &gB,
-              PointMap      &pmB,
-                // for compliance with filter policy, not used
-              HalfedgeGraph &g_out,
-              PointMap      &pm_out
-                // for compliance with filter policy, not used
-              )
+              HalfedgeGraph &g_out)
 {
   GeometryTraits gt(gA);
-  boolean_minus< HalfedgeGraph, PointMap, GeometryTraits >(
-      gA, pmA, gB, pmB, g_out, pm_out, gt);
+  boolean_minus< HalfedgeGraph, GeometryTraits >(gA, gB, g_out, gt);
 }
 
 

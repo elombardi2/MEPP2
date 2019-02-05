@@ -80,10 +80,6 @@ int main(int argc, const char **argv)
   FEVV::PMapsContainer pmaps_bag_2;
   FEVV::Filters::read_mesh(input_file_2, m2, pmaps_bag_2);
 
-  // retrieve point maps
-  auto pm1 = get(boost::vertex_point, m1);
-  auto pm2 = get(boost::vertex_point, m2);
-
   // create output mesh
   FEVV::MeshPolyhedron m_out;
   auto pm_out = get(boost::vertex_point, m_out);
@@ -92,11 +88,11 @@ int main(int argc, const char **argv)
   // apply filter, result in m_out
   std::cout << "Running boolean operation" + operation + "..." << std::endl;
   if(operation == "union")
-    FEVV::Filters::boolean_union(m1, pm1, m2, pm2, m_out, pm_out);
+    FEVV::Filters::boolean_union(m1, m2, m_out);
   else if(operation == "inter")
-    FEVV::Filters::boolean_inter(m1, pm1, m2, pm2, m_out, pm_out);
+    FEVV::Filters::boolean_inter(m1, m2, m_out);
   else
-    FEVV::Filters::boolean_minus(m1, pm1, m2, pm2, m_out, pm_out);
+    FEVV::Filters::boolean_minus(m1, m2, m_out);
 
   // write result to file
   FEVV::Filters::write_mesh(output_file, m_out, pmaps_bag_out);
