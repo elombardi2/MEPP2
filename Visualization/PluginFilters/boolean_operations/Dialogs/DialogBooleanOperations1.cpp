@@ -19,19 +19,15 @@ FEVV::DialogBooleanOperations1::DialogBooleanOperations1(QWidget *parent)
 ////////////////////////////////////////////////////////////////////////////////
 FEVV::DialogBooleanOperations1::~DialogBooleanOperations1() { delete ui; }
 ////////////////////////////////////////////////////////////////////////////////
-void
-FEVV::DialogBooleanOperations1::setParameters(double x, double y, double z)
-{
-  ui->lineEdit_X->setText(QString::number(x));
-  ui->lineEdit_Y->setText(QString::number(y));
-  ui->lineEdit_Z->setText(QString::number(z));
-}
 ////////////////////////////////////////////////////////////////////////////////
 void
-FEVV::DialogBooleanOperations1::getParameters(double &x, double &y, double &z)
+FEVV::DialogBooleanOperations1::getParameters(std::string &operation)
 {
-  x = ui->lineEdit_X->text().toDouble();
-  y = ui->lineEdit_Y->text().toDouble();
-  z = ui->lineEdit_Z->text().toDouble();
+  if(ui->radioButton_Union->isChecked())
+    operation = "UNION";
+  else if(ui->radioButton_Inter->isChecked())
+    operation = "INTER";
+  else
+    operation = "MINUS";
 }
 ////////////////////////////////////////////////////////////////////////////////

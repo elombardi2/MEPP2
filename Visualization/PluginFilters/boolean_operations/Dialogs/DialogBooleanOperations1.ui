@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>960</width>
+    <width>300</width>
     <height>160</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Processing</string>
+   <string>Boolean Operations</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -30,66 +30,38 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QLabel" name="label_Process">
-             <property name="text">
-              <string> Process : </string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_X">
-             <item>
-              <widget class="QLabel" name="label_X">
-               <property name="text">
-                <string>X</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEdit_X"/>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_Y">
-             <item>
-              <widget class="QLabel" name="label_Y">
-               <property name="text">
-                <string>Y</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEdit_Y"/>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_Z">
-             <item>
-              <widget class="QLabel" name="label_Z">
-               <property name="text">
-                <string>Z</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEdit_Z"/>
-             </item>
-            </layout>
-           </item>
-          </layout>
+          <widget class="QLabel" name="label_Process">
+           <property name="text">
+            <string> Choose one operation: </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioButton_Union">
+           <property name="text">
+            <string>UNION</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioButton_Inter">
+           <property name="text">
+            <string>INTERSECTION</string>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioButton_minus">
+           <property name="text">
+            <string>SUBTRACTION</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>

@@ -66,13 +66,9 @@ public:
   ~BooleanOperationsPlugin() = default;
 
 public:
-  void init() override { init(true); }
-
-  void init(bool _forceCompute)
+  void init() override
   {
-    value_forceCompute = _forceCompute;
-
-    output_mesh_void = nullptr;
+    m_output_mesh_void = nullptr;
   }
 
   void reset() override
@@ -101,10 +97,15 @@ public:
     HalfedgeGraph *output_mesh = new HalfedgeGraph;
 
     // apply filter
-    FEVV::Filters::boolean_union(*mesh_A, *mesh_B, *output_mesh);
+    if(m_operation == "UNION")
+      FEVV::Filters::boolean_union(*mesh_A, *mesh_B, *output_mesh);
+    else if(m_operation == "INTER")
+      FEVV::Filters::boolean_inter(*mesh_A, *mesh_B, *output_mesh);
+    else
+      FEVV::Filters::boolean_minus(*mesh_A, *mesh_B, *output_mesh);
 
     // store output mesh for later display
-    output_mesh_void = static_cast< void * >(output_mesh);
+    m_output_mesh_void = static_cast< void * >(output_mesh);
   }
 
   template< typename HalfedgeGraph >
@@ -142,7 +143,7 @@ public:
       viewer->m_space_time = true;
 
       // draw output mesh
-      auto output_mesh = static_cast< HalfedgeGraph * >( output_mesh_void);
+      auto output_mesh = static_cast< HalfedgeGraph * >( m_output_mesh_void);
       if(output_mesh)
       {
           // pmaps_bag is required for display
@@ -151,7 +152,7 @@ public:
                                       output_pmaps_bag,
                                       false,
                                       false,
-                                      std::string("UNION"));
+                                      m_operation);
       }
     }
 
@@ -228,13 +229,12 @@ public:
   bool Generic_plugin(const QString &plugin) override
   {
     DialogBooleanOperations1 dial1;
-    //TODO-elo-restore  dial1.setParameters(*value_x, *value_y, *value_z);
     if(dial1.exec() == QDialog::Accepted)
     {
-      //TODO-elo-restore  dial1.getParameters(*value_x, *value_y, *value_z);
+      dial1.getParameters(m_operation);
 
-      SimpleWindow *sw = static_cast< SimpleWindow * >(
-          window); // dynamic_cast fails under OS X
+      SimpleWindow *sw = static_cast< SimpleWindow * >(window);
+          // dynamic_cast fails under OS X
 
       sw->onModificationParam("booleanoperations_qt_p", this);
       sw->onApplyButton();
@@ -252,10 +252,10 @@ protected:
   bool value_forceCompute;
 
   // filter parameters
-  //TODO-elo  ajouter parametre operation
+  std::string m_operation;
 
   // filter output
-  void *output_mesh_void;
+  void *m_output_mesh_void;
 };
 
 } // namespace FEVV

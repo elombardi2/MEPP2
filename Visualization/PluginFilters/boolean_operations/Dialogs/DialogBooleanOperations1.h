@@ -27,8 +27,7 @@ public:
   explicit DialogBooleanOperations1(QWidget *parent = 0);
   ~DialogBooleanOperations1();
 
-  void setParameters(double x, double y, double z);
-  void getParameters(double &x, double &y, double &z);
+  void getParameters(std::string &operation);
 
 private:
   Ui::DialogBooleanOperations1 *ui;
