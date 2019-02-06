@@ -66,15 +66,13 @@ public:
   ~BooleanOperationsPlugin() = default;
 
 public:
-  void init() override { init(true, 1.0, 1.0, 1.0); }
+  void init() override { init(true); }
 
-  void init(bool _forceCompute, double _x, double _y, double _z)
+  void init(bool _forceCompute)
   {
     *value_forceCompute = _forceCompute;
 
-    *value_x = _x;
-    *value_y = _y;
-    *value_z = _z;
+    output_mesh_void = nullptr;
   }
 
   void reset() override
@@ -95,17 +93,24 @@ public:
   }
 
   template< typename HalfedgeGraph >
-  void process(HalfedgeGraph *_mesh)
+  void process(HalfedgeGraph *mesh_A, HalfedgeGraph *mesh_B)
   {
     std::cout << "Asking to apply BooleanOperations filter ! " << std::endl;
 
-    auto pm = get(boost::vertex_point, *_mesh);
+    // create output mesh
+    HalfedgeGraph *output_mesh = new HalfedgeGraph;
+
+    // apply filter
+    FEVV::Filters::boolean_union(*mesh_A, *mesh_B, *output_mesh);
+
+    // store output mesh for later display
+    output_mesh_void = static_cast< void * >(output_mesh);
+
 
     //TODO-elo-restore  FEVV::Filters::boolean_union(m1, m2, m_out);
     //TODO-elo  call on 2 meshes
     //TODO-elo  create a mesh for output, how to display?
     //TODO-elo-rm-beg  quick test
-    FEVV::Filters::boolean_union(*_mesh, *_mesh, *_mesh);
     //TODO-elo-rm-end  quick test
   }
 
@@ -114,15 +119,60 @@ public:
                HalfedgeGraph *_mesh,
                FEVV::PMapsContainer *pmaps_bag)
   {
-    if(*value_forceCompute)
-      process(_mesh);
-
     SimpleViewer< HalfedgeGraph > *viewer =
-        dynamic_cast< SimpleViewer< HalfedgeGraph > * >(_adapter->getViewer());
+      dynamic_cast< SimpleViewer< HalfedgeGraph > * >(_adapter->getViewer());
+
+    if(*value_forceCompute)
+    {
+      // retrieve the two input meshes in current viewer window,
+      // then apply the filter
+
+      std::vector< HalfedgeGraph * > meshes = viewer->getMeshes();
+      if(meshes.size() == 2)
+      {
+        auto mA = meshes[0];
+        auto mB = meshes[1];
+
+        process(mA, mB); // apply filter
+      }
+      else
+      {
+        QMessageBox::information(0,
+            "",
+            QObject::tr("Boolean Operations filter "
+              "needs two meshes "
+              "opened in Space or Time."));
+      }
+    }
+
     if(viewer)
+    {
       viewer->draw_or_redraw_mesh(_mesh, pmaps_bag, true, false);
 
-    reset();
+      // space_time mode ON
+      viewer->m_space_time = true;
+
+      // draw output mesh
+      auto output_mesh = static_cast< HalfedgeGraph * >( output_mesh_void);
+      if(output_mesh)
+      {
+          FEVV::PMapsContainer pmaps_bag; // empty bag, just for display
+
+          // draw mesh
+          viewer->draw_or_redraw_mesh(output_mesh,
+                                      &pmaps_bag,
+                                      false,
+                                      false,
+                                      std::string("UNION"));
+      }
+
+      // destroy output mesh
+      delete(output_mesh);
+      output_mesh_void = nullptr;
+    }
+
+    //ELO comment next line to keep parameters between calls
+    //reset();
 
     viewer->frame();
   }
@@ -194,10 +244,10 @@ public:
   bool Generic_plugin(const QString &plugin) override
   {
     DialogBooleanOperations1 dial1;
-    dial1.setParameters(*value_x, *value_y, *value_z);
+    //TODO-elo-restore  dial1.setParameters(*value_x, *value_y, *value_z);
     if(dial1.exec() == QDialog::Accepted)
     {
-      dial1.getParameters(*value_x, *value_y, *value_z);
+      //TODO-elo-restore  dial1.getParameters(*value_x, *value_y, *value_z);
 
       SimpleWindow *sw = static_cast< SimpleWindow * >(
           window); // dynamic_cast fails under OS X
@@ -217,9 +267,11 @@ signals:
 protected:
   bool *value_forceCompute = new bool(false);
 
-  double *value_x = new double(0.0);
-  double *value_y = new double(0.0);
-  double *value_z = new double(0.0);
+  // filter parameters
+  //TODO-elo  ajouter parametre operation
+
+  // filter output
+  void *output_mesh_void;
 };
 
 } // namespace FEVV
