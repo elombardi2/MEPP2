@@ -70,7 +70,7 @@ public:
 
   void init(bool _forceCompute)
   {
-    *value_forceCompute = _forceCompute;
+    value_forceCompute = _forceCompute;
 
     output_mesh_void = nullptr;
   }
@@ -105,13 +105,6 @@ public:
 
     // store output mesh for later display
     output_mesh_void = static_cast< void * >(output_mesh);
-
-
-    //TODO-elo-restore  FEVV::Filters::boolean_union(m1, m2, m_out);
-    //TODO-elo  call on 2 meshes
-    //TODO-elo  create a mesh for output, how to display?
-    //TODO-elo-rm-beg  quick test
-    //TODO-elo-rm-end  quick test
   }
 
   template< typename HalfedgeGraph >
@@ -122,33 +115,29 @@ public:
     SimpleViewer< HalfedgeGraph > *viewer =
       dynamic_cast< SimpleViewer< HalfedgeGraph > * >(_adapter->getViewer());
 
-    if(*value_forceCompute)
+    // retrieve the two input meshes in current viewer window,
+    // then apply the filter
+
+    std::vector< HalfedgeGraph * > meshes = viewer->getMeshes();
+    if(meshes.size() >= 2)
     {
-      // retrieve the two input meshes in current viewer window,
-      // then apply the filter
+      auto mA = meshes[0];
+      auto mB = meshes[1];
 
-      std::vector< HalfedgeGraph * > meshes = viewer->getMeshes();
-      if(meshes.size() == 2)
-      {
-        auto mA = meshes[0];
-        auto mB = meshes[1];
-
-        process(mA, mB); // apply filter
-      }
-      else
-      {
-        QMessageBox::information(0,
-            "",
-            QObject::tr("Boolean Operations filter "
-              "needs two meshes "
-              "opened in Space or Time."));
-      }
+      process(mA, mB); // apply filter
+    }
+    else
+    {
+      QMessageBox::information(0,
+          "",
+          QObject::tr("Boolean Operations filter "
+            "needs two meshes "
+            "opened in Space or Time."));
     }
 
+    // draw output mesh
     if(viewer)
     {
-      viewer->draw_or_redraw_mesh(_mesh, pmaps_bag, true, false);
-
       // space_time mode ON
       viewer->m_space_time = true;
 
@@ -156,19 +145,14 @@ public:
       auto output_mesh = static_cast< HalfedgeGraph * >( output_mesh_void);
       if(output_mesh)
       {
-          FEVV::PMapsContainer pmaps_bag; // empty bag, just for display
-
-          // draw mesh
+          // pmaps_bag is required for display
+          auto output_pmaps_bag = new FEVV::PMapsContainer;
           viewer->draw_or_redraw_mesh(output_mesh,
-                                      &pmaps_bag,
+                                      output_pmaps_bag,
                                       false,
                                       false,
                                       std::string("UNION"));
       }
-
-      // destroy output mesh
-      delete(output_mesh);
-      output_mesh_void = nullptr;
     }
 
     //ELO comment next line to keep parameters between calls
@@ -265,7 +249,7 @@ signals:
   void resetSignal();
 
 protected:
-  bool *value_forceCompute = new bool(false);
+  bool value_forceCompute;
 
   // filter parameters
   //TODO-elo  ajouter parametre operation
