@@ -2,8 +2,8 @@
 // All rights reserved.
 //
 // This file is part of MEPP2; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published 
-// by the Free Software Foundation; either version 3 of the License, 
+// it under the terms of the GNU General Public License as published
+// by the Free Software Foundation; either version 3 of the License,
 // or (at your option) any later version.
 //
 // This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
@@ -28,6 +28,7 @@
 #include <osg/Point>
 
 #include <memory>
+#include <Eigen/Dense> // for Eigen::matrix
 
 #include "Visualization/SimpleWindow.h"
 
@@ -546,7 +547,7 @@ FEVV::SimpleViewer< HalfedgeGraph >::internal_createMesh(
     put_property_map(FEVV::mesh_guiproperties, *_g, *_pmaps, m_gpm);
     _m_gpm = &m_gpm;
   }
-  
+
   // --- face_normal
   if(has_map(*_pmaps, FEVV::face_normal))
   {
@@ -1451,6 +1452,8 @@ createDragger(const std::string &name)
     dragger = d;
   }
 
+  dragger->setName(name);
+
   return dragger;
 }
 
@@ -1469,6 +1472,18 @@ FEVV::SimpleViewer< HalfedgeGraph >::addDraggersToScene(
   // osg::StateAttribute::ON); // necessary ? // this ensures correct lighting
   // for scaled draggers
 
+  // osg::Group "GroupRoot"
+  //    |
+  //    |__ osg::MatrixTransform "MatrixTransform"
+  //    |   |
+  //    |   |__ osg::Group "DraggerGrp2 rotate"
+  //    |       |
+  //    |       |__ osgManipulator::TrackballDragger "TrackballDragger"
+  //    |
+  //    |__ osg::Group "DraggerGrp1 translate"
+  //        |
+  //        |__ osgManipulator::TabBoxDragger "TabBoxDragger"
+
   osg::MatrixTransform *transform = new osg::MatrixTransform;
   transform->setName("MatrixTransform");
   transform->addChild(scene);
@@ -1482,7 +1497,7 @@ FEVV::SimpleViewer< HalfedgeGraph >::addDraggersToScene(
   osgManipulator::Dragger *dragger1 = createDragger(nameDrag1);
   // here, we create a group only for the DataVisitor
   osg::Group *draggergroup1 = new osg::Group;
-  draggergroup1->setName("Dragger");
+  draggergroup1->setName("DraggerGrp1 translate");
   draggergroup1->addChild(dragger1);
   root->addChild(draggergroup1);
   scale = scene->getBound().radius() * fScaleDrag1;
@@ -1498,7 +1513,7 @@ FEVV::SimpleViewer< HalfedgeGraph >::addDraggersToScene(
   osgManipulator::Dragger *dragger2 = createDragger(nameDrag2);
   // here, we create a group only for the DataVisitor
   osg::Group *draggergroup2 = new osg::Group;
-  draggergroup2->setName("Dragger");
+  draggergroup2->setName("DraggerGrp2 rotate");
   draggergroup2->addChild(dragger2);
   transform->addChild(
       draggergroup2); // IMPORTANT for the SECOND dragger -> NOT addChild from
@@ -1996,6 +2011,40 @@ FEVV::SimpleViewer< HalfedgeGraph >::redrawMesh(bool _flushMesh,
   QApplication::restoreOverrideCursor();
 }
 
+//TODO-elo-rm-DONOTCOMMIT-beg
+inline
+void
+analyse(osg::Node *nd, int level = 0)
+{
+  std::string blanks(level*2, ' ');
+
+  /// here you have found a group.
+  osg::Geode *geode = dynamic_cast< osg::Geode * >(nd);
+  if(geode)
+  { // analyse the geode. If it isnt a geode the dynamic cast gives NULL.
+    // analyseGeode(geode);
+    std::cout << blanks << "geode " << (void *)geode << geode->getName() << std::endl;
+  }
+  else
+  {
+    osg::Group *gp = dynamic_cast< osg::Group * >(nd);
+    if(gp)
+    {
+      std::cout << blanks << "group " << gp->getName() << std::endl;
+      for(unsigned int ic = 0; ic < gp->getNumChildren(); ic++)
+      {
+        analyse(gp->getChild(ic), level + 1);
+      }
+    }
+    else
+    {
+      std::cout << blanks << "unknown node " << nd << std::endl;
+    }
+  }
+}
+//TODO-elo-rm-DONOTCOMMIT-end
+
+
 template< typename HalfedgeGraph >
 void
 FEVV::SimpleViewer< HalfedgeGraph >::centerMesh(HalfedgeGraph *_g)
@@ -2032,6 +2081,9 @@ FEVV::SimpleViewer< HalfedgeGraph >::centerMesh(HalfedgeGraph *_g)
   {
 #ifdef MANIPULATOR
     _osgView->getCameraManipulator()->setNode(v_geodes[position]->getParent(0));
+    //ELO-note: v_geodes[position]->getParent(0) is an osg::MatrixTransform
+    //          which is a group with an osg::Matrix
+    //          see http://camlosg.sourceforge.net/osg/classosg_1_1MatrixTransform.html
     // std::cout << "centerMesh (MANIPULATOR) \"" <<
     // v_geodes[position]/*->getParent(0)*/->getName() << "\"" << std::endl;
 #else
@@ -2041,7 +2093,308 @@ FEVV::SimpleViewer< HalfedgeGraph >::centerMesh(HalfedgeGraph *_g)
 #endif
     _osgView->getCameraManipulator()->computeHomePosition();
     _osgView->home();
+
+    //TODO-elo-rm-DONOTCOMMIT-beg
+    std::cout << __func__ << std::endl;
+    std::cout << "current node = " << v_geodes[position]->getName() << std::endl;
+    analyse(v_geodes[position]->getParent(0)->getParent(0));
+    /*
+    group GroupRoot
+      group MatrixTransform
+        geode 0x55a2bdfd86f0Mesh 'atetra2.off' [<Surface_mesh - aid: 55a2bdef1db0>]
+        group DraggerGrp2 rotate
+          group TrackballDragger
+            group
+              geode 0x55a2be33c5a0
+            group
+              geode 0x55a2be33c5a0
+            group
+              geode 0x55a2be33c5a0
+            group
+              geode 0x55a2be33de60
+      group DraggerGrp1 translate
+        group TabBoxDragger
+          group
+            group
+              group
+                group
+                  geode 0x55a2be321bb0Dragger Handle
+              group
+                group
+                  geode 0x55a2be321bb0Dragger Handle
+              group
+                group
+                  geode 0x55a2be321bb0Dragger Handle
+              group
+                group
+                  geode 0x55a2be321bb0Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be321bb0Dragger Handle
+              group
+                group
+                  geode 0x55a2be321bb0Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be321bb0Dragger Handle
+              group
+                group
+                  geode 0x55a2be321bb0Dragger Handle
+            group
+              group
+                geode 0x55a2be3231a0
+              group
+          group
+            group
+              group
+                group
+                  geode 0x55a2be323910Dragger Handle
+              group
+                group
+                  geode 0x55a2be323910Dragger Handle
+              group
+                group
+                  geode 0x55a2be323910Dragger Handle
+              group
+                group
+                  geode 0x55a2be323910Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be323910Dragger Handle
+              group
+                group
+                  geode 0x55a2be323910Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be323910Dragger Handle
+              group
+                group
+                  geode 0x55a2be323910Dragger Handle
+            group
+              group
+                geode 0x55a2be326f70
+              group
+          group
+            group
+              group
+                group
+                  geode 0x55a2be327b20Dragger Handle
+              group
+                group
+                  geode 0x55a2be327b20Dragger Handle
+              group
+                group
+                  geode 0x55a2be327b20Dragger Handle
+              group
+                group
+                  geode 0x55a2be327b20Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be327b20Dragger Handle
+              group
+                group
+                  geode 0x55a2be327b20Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be327b20Dragger Handle
+              group
+                group
+                  geode 0x55a2be327b20Dragger Handle
+            group
+              group
+                geode 0x55a2be32b180
+              group
+          group
+            group
+              group
+                group
+                  geode 0x55a2be32be50Dragger Handle
+              group
+                group
+                  geode 0x55a2be32be50Dragger Handle
+              group
+                group
+                  geode 0x55a2be32be50Dragger Handle
+              group
+                group
+                  geode 0x55a2be32be50Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be32be50Dragger Handle
+              group
+                group
+                  geode 0x55a2be32be50Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be32be50Dragger Handle
+              group
+                group
+                  geode 0x55a2be32be50Dragger Handle
+            group
+              group
+                geode 0x55a2be32f4b0
+              group
+          group
+            group
+              group
+                group
+                  geode 0x55a2be330180Dragger Handle
+              group
+                group
+                  geode 0x55a2be330180Dragger Handle
+              group
+                group
+                  geode 0x55a2be330180Dragger Handle
+              group
+                group
+                  geode 0x55a2be330180Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be330180Dragger Handle
+              group
+                group
+                  geode 0x55a2be330180Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be330180Dragger Handle
+              group
+                group
+                  geode 0x55a2be330180Dragger Handle
+            group
+              group
+                geode 0x55a2be3337e0
+              group
+          group
+            group
+              group
+                group
+                  geode 0x55a2be3344b0Dragger Handle
+              group
+                group
+                  geode 0x55a2be3344b0Dragger Handle
+              group
+                group
+                  geode 0x55a2be3344b0Dragger Handle
+              group
+                group
+                  geode 0x55a2be3344b0Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be3344b0Dragger Handle
+              group
+                group
+                  geode 0x55a2be3344b0Dragger Handle
+            group
+              group
+                group
+                  geode 0x55a2be3344b0Dragger Handle
+              group
+                group
+                  geode 0x55a2be3344b0Dragger Handle
+            group
+              group
+                geode 0x55a2be337b10
+              group
+    */
+    // test with osg tree hierarchy
+#if 0
+    osg::Group *root = v_geodes[position]->getParent(0)->getParent(0);
+    std::cout << "root = " << root->getName() << std::endl;
+
+    osg::Node *child0 = root->getChild(0);
+    std::cout << "root_child0 = " << child0->getName() << std::endl;
+
+    osg::Node *child1 = root->getChild(1);
+    std::cout << "root_child1 = " << child1->getName() << std::endl;
+
+    // test with v_draggers1[] and v_draggers2[]
+    auto dragger_translate = dynamic_cast< osgManipulator::TabBoxDragger * >(v_draggers1[0]);
+    assert(dragger_translate != nullptr);
+    auto mat_dragger_translate = dragger_translate->getMatrix();
+
+    auto dragger_rotate = dynamic_cast< osgManipulator::TrackballDragger * >(v_draggers2[0]);
+    assert(dragger_rotate != nullptr);
+    auto mat_dragger_rotate = dragger_rotate->getMatrix();
+#endif
+
+    // test with MatrixTransform group
+    osg::MatrixTransform *grp_MatrixTransform = dynamic_cast< osg::MatrixTransform * >(v_geodes[position]->getParent(0));
+    assert(grp_MatrixTransform != nullptr);
+    osg::Matrix mat_MatrixTransform = grp_MatrixTransform->getMatrix();
+    osg::Matrix mat_MatrixTransform_inv = grp_MatrixTransform->getInverseMatrix();
+
+#if 0
+    // test with mesh geode and getWorldMatrices()
+    osg::MatrixList mat_list_geode = v_geodes[position]->getWorldMatrices();
+
+    // is there a matrix associated with root ?
+    //auto mat_root = root->getMatrix();
+    // error: ‘class osg::Group’ has no member named ‘getMatrix’
+    auto mat_list_root = root->getWorldMatrices();
+#endif
+
+      std::cout << "coucou" << std::endl;
+    //TODO-elo-rm-DONOTCOMMIT-end
   }
+}
+
+
+template< typename HalfedgeGraph >
+osg::Matrix
+FEVV::SimpleViewer< HalfedgeGraph >::getTransformMatrixOsg(unsigned int position)
+{
+  assert(position < v_geodes.size());
+  osg::MatrixTransform *grp_MatrixTransform =
+      dynamic_cast< osg::MatrixTransform * >(v_geodes[position]->getParent(0));
+  assert(grp_MatrixTransform != nullptr);
+  osg::Matrix matrix = grp_MatrixTransform->getMatrix();
+
+  return matrix; // 4x4 homogeneous matrix
+}
+
+template< typename HalfedgeGraph >
+Eigen::Matrix4d
+FEVV::SimpleViewer< HalfedgeGraph >::getTransformMatrixEigen(unsigned int position)
+{
+  osg::Matrix osg_mat = getTransformMatrixOsg(position);
+
+  // convert OSG transform matrix to Eigen matrix
+  // transposition needed!
+  Eigen::Matrix4d eigen_mat;
+  eigen_mat << osg_mat(0, 0), osg_mat(1, 0), osg_mat(2, 0),    osg_mat(3, 0),
+               osg_mat(0, 1), osg_mat(1, 1), osg_mat(2, 1),    osg_mat(3, 1),
+               osg_mat(0, 2), osg_mat(1, 2), osg_mat(2, 2),    osg_mat(3, 2),
+               osg_mat(0, 3), osg_mat(1, 3), osg_mat(2, 3),    osg_mat(3, 3);
+  
+  //TODO-elo-rm
+  std::cout << "eigen_mat = \n" << eigen_mat << std::endl;
+
+  return eigen_mat; // 4x4 homogeneous matrix
+}
+
+template< typename HalfedgeGraph >
+void
+FEVV::SimpleViewer< HalfedgeGraph >::resetTransformMatrix(unsigned int position)
+{
+  assert(position < v_geodes.size());
+  osg::MatrixTransform *grp_MatrixTransform =
+      dynamic_cast< osg::MatrixTransform * >(v_geodes[position]->getParent(0));
+  assert(grp_MatrixTransform != nullptr);
+
+  osg::Matrix identity;
+  identity.makeIdentity();
+  grp_MatrixTransform->setMatrix(identity);
 }
 
 template< typename HalfedgeGraph >
